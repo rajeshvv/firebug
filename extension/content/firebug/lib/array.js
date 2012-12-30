@@ -2,8 +2,9 @@
 
 define([
     "firebug/lib/trace",
+    "firebug/lib/deprecated",
 ],
-function(FBTrace) {
+function(FBTrace, Deprecated) {
 
 // ********************************************************************************************* //
 // Constants
@@ -14,11 +15,13 @@ var Arr = {};
 // ********************************************************************************************* //
 // Arrays
 
-Arr.isArray = Array.isArray || function(obj)
-{
-    return Object.prototype.toString.call(obj) === "[object Array]";
-};
-
+Arr.isArray = Deprecated.deprecated("Use Array.isArray instead", Array.isArray);
+/**
+ * Return true if the given object is an Array or an Array-Like object
+ *
+ * @param obj {?} the object
+ * @return true if it is an array-like object or false otherwise
+ */
 Arr.isArrayLike = function(obj)
 {
     try
@@ -27,7 +30,7 @@ Arr.isArrayLike = function(obj)
             return false;
         if (!isFinite(obj.length))
             return false;
-        if (Arr.isArray(obj))
+        if (Array.isArray(obj))
             return true;
         if (typeof obj.callee === "function") // arguments
             return true;
@@ -44,8 +47,11 @@ Arr.isArrayLike = function(obj)
     return false;
 };
 
-// At least sometimes the keys will be on user-level window objects
-Arr.keys = function(map)
+/**
+ * @deprecated Use Object.keys instead
+ * see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/keys
+ */
+Arr.keys = Deprecated.deprecated("Use Object.keys instead", function(map)
 {
     var keys = [];
     try
@@ -59,8 +65,16 @@ Arr.keys = function(map)
     }
 
     return keys;  // return is safe
-};
+});
 
+// xxxFlorent: Shouldn't it be in object.js ?
+/**
+ * Returns the values of an object
+ *
+ * @param map {?} the object
+ *
+ * @return {Array} the values
+ */
 Arr.values = function(map)
 {
     var values = [];
@@ -90,56 +104,96 @@ Arr.values = function(map)
     return values;
 };
 
+/**
+ * Removes an item from an array or an array-like object
+ *
+ * @param list {Array or Array-Like object} the array
+ * @param item {?} the item to remove from the object
+ *
+ * @return true if an item as been removed, false otherwise
+ */
 Arr.remove = function(list, item)
 {
-    for (var i = 0; i < list.length; ++i)
+    var index = list.indexOf(item);
+    if (index >= 0)
     {
-        if (list[i] == item)
-        {
-            list.splice(i, 1);
-            return true;
-        }
+        Array.splice(list, index, 1);
+        return true;
     }
     return false;
 };
+/**
+ * Same as Arr.remove but removes all the occurences of item
+ *
+ * @param list {Array or Array-Like object} the array
+ * @param item {?} the item to remove from the object
+ *
+ * @return true if an item as been removed, false otherwise
+ */
+Arr.removeAll = function(list, item)
+{
+    var iter = 0;
 
-Arr.sliceArray = function(array, index)
+    while (Arr.remove(list, item))
+        iter++;
+
+    return (iter > 0);
+}
+
+Arr.sliceArray = Deprecated.deprecated("use Array.prototype.slice or Array.slice instead",
+function(array, index)
 {
     var slice = [];
     for (var i = index; i < array.length; ++i)
         slice.push(array[i]);
 
     return slice;
-};
+});
 
-Arr.cloneArray = function(array, fn)
+/**
+ * @deprecated Use either Array.slice(array) or Array.map(array, fn) instead. 
+ * see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array
+ *
+ * Clone an array. If a function is given as second parameter, the function is called for each
+ * elements of the passed array and the results are put in the new one.
+ *
+ * @param array {Array or Array-Like object} the array
+ * @param fn {Function} the function (optional)
+ *
+ */
+Arr.cloneArray = Deprecated.deprecated("use either Array.slice or Array.map instead",
+function(array, fn)
 {
-   var newArray = [], len = array.length;
+    if (fn)
+        return Array.map(array, fn);
+    else
+        return Array.slice(array);
+});
 
-   if (fn)
-       for (var i = 0; i < len; ++i)
-           newArray.push(fn(array[i]));
-   else
-       for (var i = 0; i < len; ++i)
-           newArray.push(array[i]);
-
-   return newArray;
-}
-
-Arr.extendArray = function(array, array2)
+/**
+ * @deprecated Use Array.concat(array, array2) or array.concat(array2) instead
+ */
+Arr.extendArray = Deprecated.deprecated("use Array.prototype.concat or Array.concat instead",
+function(array, array2)
 {
-   var newArray = [];
-   newArray.push.apply(newArray, array);
-   newArray.push.apply(newArray, array2);
-   return newArray;
-}
+   return array.concat(array2);
+});
 
+/**
+ * insert elements at a specific index
+ * NOTE: that method modifies the array passed as the first parameter
+ *
+ * @param array {Array or Array-Like object} the array in which we insert elements
+ * @param index {Integer} the index
+ * @param other {Array or Array-Like object} the elements to insert
+ *
+ * @return the updated array
+ */
 Arr.arrayInsert = function(array, index, other)
 {
-   for (var i = 0; i < other.length; ++i)
-       array.splice(i+index, 0, other[i]);
-
-   return array;
+    var splice = Array.splice.bind(Array, array, index, 0);
+    splice.apply(null, other);
+    return array;
 }
 
 /**
@@ -181,7 +235,9 @@ Arr.unique = function(ar, sorted)
  */
 Arr.sortUnique = function(ar, sortFunc)
 {
-    return Arr.unique(ar.slice().sort(sortFunc), true);
+    // make a clone of the array so the original one is preserved
+    var arCopy = Array.slice(ar);
+    return Arr.unique(arCopy.sort(sortFunc), true);
 };
 
 /**

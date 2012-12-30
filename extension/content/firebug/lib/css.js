@@ -1801,7 +1801,7 @@ Css.cssKeywords =
         "break-all",
         "keep-all"
     ],
-         
+
     "fontFamily":
     [
         // Common font families
@@ -1846,7 +1846,7 @@ Css.cssKeywords =
         "-moz-pull-down-menu",
         "-moz-field"
     ],
-       
+
     "display":
     [
         "block",
@@ -2002,7 +2002,7 @@ Css.cssKeywords =
         "read-write",
         "write-only"
     ],
-       
+
     "userSelect":
     [
         "text",

@@ -26,6 +26,11 @@ Dom.domUtils = Cc["@mozilla.org/inspector/dom-utils;1"].getService(Ci.inIDOMUtil
 // ********************************************************************************************* //
 // DOM APIs
 
+// xxxFlorent: node.find() or document.querySelector + ":scope" pseudo-class
+// could make this method deprecated soon.
+// see also: 
+// - http://dev.w3.org/2006/webapi/selectors-api2/#findelements-relative
+// - http://www.w3.org/TR/selectors-api2/#the-scope-pseudo-class
 Dom.getChildByClass = function(node) // ,classname, classname, classname...
 {
     if (!node)
@@ -75,19 +80,23 @@ Dom.getAncestorByTagName = function(node, tagName)
 };
 
 /* @Deprecated  Use native Firefox: node.getElementsByClassName(names).item(0) */
-Dom.getElementByClass = function(node, className)  // className, className, ...
+Dom.getElementByClass = Deprecated.deprecated("Use node.getElementsByClassName(names)"+
+".item(0) or node.querySelector('.class') instead",
+function(node, className)  // className, className, ...
 {
     return Dom.getElementsByClass.apply(this,arguments).item(0);
-};
+});
 
 /* @Deprecated  Use native Firefox: node.getElementsByClassName(names) */
-Dom.getElementsByClass = function(node, className)  // className, className, ...
+Dom.getElementsByClass = Deprecated.deprecated("Use node.getElementsByClassName(names)",
+function(node, className)  // className, className, ...
 {
     var args = Arr.cloneArray(arguments); args.splice(0, 1);
     return node.getElementsByClassName(args.join(" "));
-};
+});
 
-Dom.getElementsByAttribute = function(node, attrName, attrValue)
+Dom.getElementsByAttribute = Deprecated.deprecated("Use node.querySelectorAll(selector) instead",
+function(node, attrName, attrValue)
 {
     function iteratorHelper(node, attrName, attrValue, result)
     {
@@ -103,7 +112,7 @@ Dom.getElementsByAttribute = function(node, attrName, attrValue)
     var result = [];
     iteratorHelper(node, attrName, attrValue, result);
     return result;
-}
+});
 
 Dom.isAncestor = function(node, potentialAncestor)
 {
@@ -179,6 +188,8 @@ Dom.addScript = function(doc, id, src)
     return element;
 }
 
+// xxxFlorent: TODO (if possible) add a new path using outerHTML in the case element is an HTMLElement
+// xxxFlorent: don't deprecate it (element.outerHTML doesn't exist for non-HTML elements).
 Dom.setOuterHTML = function(element, html)
 {
     try
@@ -207,19 +218,28 @@ Dom.markupToDocFragment = function(markup, parent)
 
 Dom.appendInnerHTML = function(element, html, referenceElement)
 {
-    var doc = element.ownerDocument;
-    var range = doc.createRange();  // a helper object
-    range.selectNodeContents(element); // the environment to interpret the html
-
-    var fragment = range.createContextualFragment(html);  // parse
-    var firstChild = fragment.firstChild;
-    element.insertBefore(fragment, referenceElement);
-
+    var firstGeneratedChild = null;
+    // using insertAdjacentHTML is safer for HTML elements:
+    if (element instanceof HTMLElement)
+    {
+        var lastChild = element.lastChild;
+        element.insertAdjancentHTML("beforeEnd", html);
+        firstGeneratedChild = lastChild.nextSibling;
+    }
+    else
+    {
+        var fragment = Dom.markupToDocFragment(html, referenceElement);
+        firstGeneratedChild = fragment.firstChild;
+        element.insertBefore(fragment, referenceElement);
+    }
     return firstChild;
 };
 
 Dom.insertTextIntoElement = function(element, text)
 {
+    // xxxFlorent: could this be replaced with the following code? :
+    //      var textNode = element.ownerDocument.createTextNode(text);
+    //      element.appendChild(text);
     var command = "cmd_insertText";
 
     var controller = element.controllers.getControllerForCommand(command);
@@ -248,12 +268,12 @@ Dom.collapse = function(elt, collapsed)
 
 Dom.isCollapsed = function(elt)
 {
-    return (elt.getAttribute("collapsed") == "true") ? true : false;
+    return elt.getAttribute("collapsed") === "true";
 };
 
 Dom.hide = function(elt, hidden)
 {
-    elt.style.visibility = hidden ? "hidden" : "visible";
+    elt.style.visibility = (hidden ? "hidden" : "visible");
 };
 
 Dom.clearNode = function(node)
@@ -612,6 +632,8 @@ Dom.linesIntoCenterView = function(element, scrollBox)  // {before: int, after: 
     }
 };
 
+// xxxFlorent: read the code and see if that could not be replaced with scrollIntoView
+
 /**
  * Scrolls an element into view
  * @param {Object} element Element to scroll to
@@ -710,6 +732,8 @@ Dom.scrollTo = function(element, scrollBox, alignmentX, alignmentY, scrollWhenVi
     if (FBTrace.DBG_PANELS)
         FBTrace.sysout("dom.scrollTo", element.innerHTML);
 };
+
+// xxxFlorent: read it (same as Dom.scrollTo)
 
 /**
  * Centers an element inside a scrollable area
@@ -916,6 +940,10 @@ Dom.isInlineEventHandler = function(name)
 
 Dom.EventCopy = function(event)
 {
+    // ensure Dom.EventCopy is called as a constructor
+    if (! (this instanceof Dom.EventCopy))
+        throw new Error("Dom.EventCopy is a constructor");
+
     // Because event objects are destroyed arbitrarily by Gecko, we must make a copy of them to
     // represent them long term in the inspector.
     for (var name in event)

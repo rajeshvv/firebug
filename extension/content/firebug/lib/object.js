@@ -2,10 +2,10 @@
 
 define([
     "firebug/lib/trace",
-    "firebug/lib/array",
     "firebug/lib/string",
+    "firebug/lib/deprecated",
 ],
-function(FBTrace, Arr, Str) {
+function(FBTrace, Str, Deprecated) {
 
 // ********************************************************************************************* //
 // Constants
@@ -16,16 +16,20 @@ var Obj = {};
 
 // ********************************************************************************************* //
 
-Obj.bind = function()  // fn, thisObject, args => thisObject.fn(arguments, args);
+// fn, thisObject, args => thisObject.fn(arguments, args);
+Obj.bind = Deprecated.deprecated("use Function.prototype.bind instead", function()
 {
-   var args = Arr.cloneArray(arguments), fn = args.shift(), object = args.shift();
-   return function bind() { return fn.apply(object, Arr.arrayInsert(Arr.cloneArray(args), 0, arguments)); }
-};
+    var fn = Array.shift(arguments);
+    return fn.bind.apply(fn, arguments);
+});
 
-Obj.bindFixed = function() // fn, thisObject, args => thisObject.fn(args);
+// fn, thisObject, args => thisObject.fn(args);
+Obj.bindFixed = function()
 {
-    var args = Arr.cloneArray(arguments), fn = args.shift(), object = args.shift();
-    return function() { return fn.apply(object, args); }
+    var args = Array.slice(arguments);
+    var fn = args.shift();
+    var thisObject = args.shift();
+    return function() { return fn.apply(thisObject, args); }
 };
 
 Obj.extend = function()
@@ -96,7 +100,7 @@ Obj.hasProperties = function(ob, nonEnumProps, ownPropsOnly)
         var type = typeof(ob);
         if (type == "string" && ob.length)
             return true;
-         
+
         if (type === "number" || type === "boolean" || type === "undefined" || ob === null)
             return false;
 

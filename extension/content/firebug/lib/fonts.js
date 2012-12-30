@@ -41,9 +41,8 @@ Fonts.getFonts = function(node)
     }
 
     var fontFaces = Dom.domUtils.getUsedFontFaces(range);
-    var fonts = [];
-    for (var i=0; i<fontFaces.length; i++)
-        fonts.push(fontFaces.item(i));
+    // converts fontFaces to an array:
+    var fonts = Array.slice(fontFaces);
 
     if (FBTrace.DBG_FONTS)
         FBTrace.sysout("Fonts.getFonts; used fonts", fonts);
