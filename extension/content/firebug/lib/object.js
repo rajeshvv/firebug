@@ -17,19 +17,47 @@ var Obj = {};
 // ********************************************************************************************* //
 
 // fn, thisObject, args => thisObject.fn(arguments, args);
-Obj.bind = Deprecated.deprecated("use Function.prototype.bind instead", function()
+Obj.bind = Deprecated.deprecated("use either: Obj.bindFixed, Obj.bindRight or "+
+"Function.prototype.bind instead", function(fn, thisObject/*, ...origArgs*/)
 {
-    var fn = Array.shift(arguments);
-    return fn.bind.apply(fn, arguments);
+    return Obj.bindRight.apply(this, arguments);
 });
 
-// fn, thisObject, args => thisObject.fn(args);
-Obj.bindFixed = function()
+/**
+ * Creates a new function that, when called, uses the provided `this` value and appends the provided
+ * arguments. Note that it differs from Function.prototype.bind which prepends the provided 
+ * arguments (that is why this function is called bindRight).
+ *
+ * @param {Function} fn the function to bind
+ * @param {?} thisObject the object to pass as the `this` value
+ * @param {?} ...args the series of parameters to pass to the new function
+ *
+ * @return {Function} the new function
+ */
+Obj.bindRight = function(fn, thisObject/*, ...origArgs*/)
 {
-    var args = Array.slice(arguments);
-    var fn = args.shift();
-    var thisObject = args.shift();
-    return function() { return fn.apply(thisObject, args); }
+    var origArgs = Array.prototype.slice.call(arguments, 2);
+    return function(/*...additionalArgs*/)
+    {
+        var additionalArgs = Array.prototype.slice.call(arguments);
+        return fn.apply(thisObject, additionalArgs.concat(origArgs));
+    };
+}
+
+/**
+ * Creates a new function that, when called, uses the provided `this` value and arguments.
+ * At the contrary of `Function.prototype.bind`, any parameter provided at the call is ignored.
+ *
+ * @param {Function} fn the function to bind
+ * @param {?} thisObject the object to pass as the `this` value
+ * @param {?} ...args the series of parameters to pass to the new function
+ *
+ * @return {Function} the new Function
+ */
+Obj.bindFixed = function(fn, thisObject/*, ...args*/)
+{
+    var args = Array.prototype.slice.call(arguments, 2);
+    return function() { return fn.apply(thisObject, args); };
 };
 
 Obj.extend = function()
@@ -200,8 +228,8 @@ Obj.XW_instanceof = function(obj, type)
  * isNonNativeGetter has been introduced in Firefox 7
  * The method has been moved to WebConsoleUtils.jsm in Fx 18
  *
- * @param object aObject The object that contains the property.
- * @param string aProp The property you want to check if it is a getter or not.
+ * @param object obj The object that contains the property.
+ * @param string propName The property you want to check if it is a getter or not.
  * @return boolean True if the given property is a getter, false otherwise.
  */
 Obj.isNonNativeGetter = function(obj, propName)

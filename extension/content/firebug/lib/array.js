@@ -5,12 +5,45 @@ define([
     "firebug/lib/deprecated",
 ],
 function(FBTrace, Deprecated) {
+"use strict";
 
 // ********************************************************************************************* //
 // Constants
 
 const Ci = Components.interfaces;
 var Arr = {};
+
+// Array Generic methods
+// use them to call Array methods with Array-Like objects (arguments, String, NodeList...)
+// example: var firstArg = Array.forEach(nodeList, func);
+//
+// 1. xxxFlorent: should be deprecated as soon Array generics are standardized in ES5 or ES6
+// 2. xxxFlorent: BTW, can we consider Array generic methods as safe to be used?? What would happen if it is eventually abandoned?
+var ArrayGen = {};
+
+(function()
+{
+    var methods = [
+        'join', 'reverse', 'sort', 'push', 'pop', 'shift', 'unshift',
+        'splice', 'concat', 'slice', 'indexOf', 'lastIndexOf',
+        'forEach', 'map', 'reduce', 'reduceRight', 'filter',
+        'some', 'every'
+    ];
+
+    methods.forEach(function(methodName)
+    {
+        // xxxFlorent: do you allow the use of rest parameters? That would simplify a lot of code...
+        ArrayGen[methodName] = function(thisObj, ...args)
+        {
+            return Array.prototype[methodName].apply(thisObj, args);
+        };
+    });
+})();
+
+Object.seal(ArrayGen);
+Object.freeze(ArrayGen);
+
+Arr.ArrayGen = ArrayGen;
 
 // ********************************************************************************************* //
 // Arrays
@@ -67,7 +100,6 @@ Arr.keys = Deprecated.deprecated("Use Object.keys instead", function(map)
     return keys;  // return is safe
 });
 
-// xxxFlorent: Shouldn't it be in object.js ?
 /**
  * Returns the values of an object
  *
@@ -114,10 +146,10 @@ Arr.values = function(map)
  */
 Arr.remove = function(list, item)
 {
-    var index = list.indexOf(item);
+    var index = ArrayGen.indexOf(list, item);
     if (index >= 0)
     {
-        Array.splice(list, index, 1);
+        ArrayGen.splice(list, index, 1);
         return true;
     }
     return false;
@@ -165,9 +197,9 @@ Arr.cloneArray = Deprecated.deprecated("use either Array.slice or Array.map inst
 function(array, fn)
 {
     if (fn)
-        return Array.map(array, fn);
+        return ArrayGen.map(array, fn);
     else
-        return Array.slice(array);
+        return ArrayGen.slice(array);
 });
 
 /**
@@ -191,7 +223,7 @@ function(array, array2)
  */
 Arr.arrayInsert = function(array, index, other)
 {
-    var splice = Array.splice.bind(Array, array, index, 0);
+    var splice = ArrayGen.splice.bind(Array, array, index, 0);
     splice.apply(null, other);
     return array;
 }
@@ -236,12 +268,13 @@ Arr.unique = function(ar, sorted)
 Arr.sortUnique = function(ar, sortFunc)
 {
     // make a clone of the array so the original one is preserved
-    var arCopy = Array.slice(ar);
+    var arCopy = ArrayGen.slice(ar);
     return Arr.unique(arCopy.sort(sortFunc), true);
 };
 
 /**
  * Merge together two arrays, sort the result, and eliminate any duplicates.
+ * Deprecated.
  */
 Arr.merge = function(arr1, arr2, sortFunc)
 {

@@ -57,6 +57,7 @@ Dom.getChildByClass = function(node) // ,classname, classname, classname...
     return node;
 };
 
+
 Dom.getAncestorByClass = function(node, className)
 {
     for (var parent = node; parent; parent = parent.parentNode)
@@ -223,8 +224,8 @@ Dom.appendInnerHTML = function(element, html, referenceElement)
     if (element instanceof HTMLElement)
     {
         var lastChild = element.lastChild;
-        element.insertAdjancentHTML("beforeEnd", html);
-        firstGeneratedChild = lastChild.nextSibling;
+        element.insertAdjacentHTML("beforeEnd", html);
+        firstGeneratedChild = (lastChild ? lastChild.nextSibling : element.firstChild);
     }
     else
     {
@@ -232,7 +233,7 @@ Dom.appendInnerHTML = function(element, html, referenceElement)
         firstGeneratedChild = fragment.firstChild;
         element.insertBefore(fragment, referenceElement);
     }
-    return firstChild;
+    return firstGeneratedChild;
 };
 
 Dom.insertTextIntoElement = function(element, text)
