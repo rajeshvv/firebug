@@ -20,7 +20,6 @@ var Arr = {};
 // 1. xxxFlorent: should be deprecated as soon Array generics are standardized in ES5 or ES6
 // 2. xxxFlorent: BTW, can we consider Array generic methods as safe to be used?? What would happen if it is eventually abandoned?
 var ArrayGen = {};
-
 (function()
 {
     var methods = [
@@ -32,9 +31,10 @@ var ArrayGen = {};
 
     methods.forEach(function(methodName)
     {
-        // xxxFlorent: do you allow the use of rest parameters? That would simplify a lot of code...
-        ArrayGen[methodName] = function(thisObj, ...args)
+        // xxxFlorent: TODO: [REST]
+        ArrayGen[methodName] = function(thisObj/*, ...args*/)
         {
+            var args = Array.prototype.slice.call(args, 1);
             return Array.prototype[methodName].apply(thisObj, args);
         };
     });

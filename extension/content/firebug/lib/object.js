@@ -17,12 +17,13 @@ var Obj = {};
 // ********************************************************************************************* //
 
 // fn, thisObject, args => thisObject.fn(arguments, args);
-Obj.bind = Deprecated.deprecated("use either: Obj.bindFixed, Obj.bindRight or "+
-"Function.prototype.bind instead", function(fn, thisObject/*, ...origArgs*/)
+Obj.bind = Deprecated.deprecated("use either (depending on the case): Obj.bindRight, Obj.bindFixed"+
+" or Function.prototype.bind instead", function()
 {
     return Obj.bindRight.apply(this, arguments);
 });
 
+// xxxFlorent: TODO: [REST]
 /**
  * Creates a new function that, when called, uses the provided `this` value and appends the provided
  * arguments. Note that it differs from Function.prototype.bind which prepends the provided 
@@ -44,6 +45,7 @@ Obj.bindRight = function(fn, thisObject/*, ...origArgs*/)
     };
 }
 
+// xxxFlorent: TODO: [REST]
 /**
  * Creates a new function that, when called, uses the provided `this` value and arguments.
  * At the contrary of `Function.prototype.bind`, any parameter provided at the call is ignored.

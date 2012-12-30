@@ -57,7 +57,6 @@ Dom.getChildByClass = function(node) // ,classname, classname, classname...
     return node;
 };
 
-
 Dom.getAncestorByClass = function(node, className)
 {
     for (var parent = node; parent; parent = parent.parentNode)
