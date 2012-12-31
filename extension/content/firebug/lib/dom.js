@@ -9,6 +9,10 @@ define([
     "firebug/lib/wrapper",
 ],
 function(FBTrace, Deprecated, Css, Arr, Xml, Wrapper) {
+"use strict";
+/**
+ * @util Utility for Nodes
+ */
 
 // ********************************************************************************************* //
 // Constants
@@ -17,6 +21,7 @@ var Ci = Components.interfaces;
 var Cc = Components.classes;
 
 var Dom = {};
+/** @lends Dom */
 var domMemberCache = null;
 var domMemberMap = {};
 var domMappedData = new WeakMap();
@@ -206,12 +211,34 @@ Dom.getBody = function(doc)
 // ********************************************************************************************* //
 // DOM Modification
 
+/**
+ * Insert the new node after the reference node.
+ *
+ * @param {Node} newNode the node to insert
+ * @param {Node} referenceNode the node after which we insert the new node
+ *
+ * @return {Node} the new node if the insertion succeeded
+ */
 Dom.insertAfter = function(newNode, referenceNode)
 {
-    if (referenceNode.parentNode)
-        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    if (!referenceNode.parentNode)
+        return;
+
+    if (referenceNode.nextSibling)
+        return referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    else
+        return referenceNode.parentNode.appendChild(newNode);
 }
 
+/**
+ * Insert a script element in the document
+ *
+ * @param doc {DocumentElement} the document
+ * @param id {String} the id of the script to insert
+ * @param content {String} the content of the script (evaluated once the script is inserted)
+ *
+ * @return {Element} the inserted script
+ */
 Dom.addScript = function(doc, id, src)
 {
     var element = doc.createElementNS("http://www.w3.org/1999/xhtml", "html:script");
@@ -238,9 +265,13 @@ Dom.addScript = function(doc, id, src)
     return element;
 }
 
-// xxxFlorent: TODO (if possible) add a new path using outerHTML in the case element is an HTMLElement
-// xxxFlorent: don't deprecate it (element.outerHTML doesn't exist for non-HTML elements).
-Dom.setOuterHTML = function(element, html)
+/**
+ * @deprecated since Firefox 20, we can use outerHTML instead, even for non-HTML elements
+ *
+ * Set the outerHTML of kind of element
+ */
+Dom.setOuterHTML = Deprecated.deprecated("Since Firefox 20, use outerHTML instead, "+
+"even with non-HTML elements", function(element, html)
 {
     try
     {
@@ -255,18 +286,28 @@ Dom.setOuterHTML = function(element, html)
     {
         return [element, element];
     }
-};
+});
 
-Dom.markupToDocFragment = function(markup, parent)
+/**
+ * Converts a chunk of HTML code into DOM elements (stored in a document fragment)
+ *
+ * @param {String} markup the HTML code
+ * @param {Element} the reference element (often the element which will receive the fragment)
+ *
+ * @return {DocumentFragment} the document fragment having the generated elements
+ */
+Dom.markupToDocFragment = function(markup, referenceElement)
 {
-    var doc = parent.ownerDocument;
+    var doc = referenceElement.ownerDocument;
     var range = doc.createRange();
-    range.selectNode(parent || doc.documentElement);
+    range.selectNode(referenceElement || doc.documentElement);
 
     return range.createContextualFragment(markup);
 };
 
-Dom.appendInnerHTML = function(element, html, referenceElement)
+Dom.appendInnerHTML = Deprecated.deprecated("Since Firefox 20, use "+
+"insertAdjacentHTML(\"beforeEnd\", html) instead, even with non-HTML elements",
+function(element, html, referenceElement)
 {
     var firstGeneratedChild = null;
     // using insertAdjacentHTML is safer for HTML elements:
@@ -283,8 +324,11 @@ Dom.appendInnerHTML = function(element, html, referenceElement)
         element.insertBefore(fragment, referenceElement);
     }
     return firstGeneratedChild;
-};
+});
 
+/**
+ * TODO...
+ */
 Dom.insertTextIntoElement = function(element, text)
 {
     // xxxFlorent: could this be replaced with the following code? :
@@ -305,6 +349,10 @@ Dom.insertTextIntoElement = function(element, text)
 
 // ********************************************************************************************* //
 
+/**
+ * @deprecated
+ * xxxFlorent: hide XUL elements?? (TODO)
+ */
 Dom.collapse = function(elt, collapsed)
 {
     if (!elt)
@@ -316,15 +364,26 @@ Dom.collapse = function(elt, collapsed)
     elt.setAttribute("collapsed", collapsed ? "true" : "false");
 };
 
+/**
+ * @deprecated
+ * TODO
+ */
 Dom.isCollapsed = function(elt)
 {
     return elt.getAttribute("collapsed") === "true";
 };
 
-Dom.hide = function(elt, hidden)
+/**
+ * @deprecated set elt.style.visibility instead
+ * Hide or display an element
+ *
+ * @param {Element} elt the element
+ * @param {Boolean} hidden if set to true, hide the element, otherwise display it
+ */
+Dom.hide = Deprecated.deprecated("set elt.style.visibility instead", function(elt, hidden)
 {
     elt.style.visibility = (hidden ? "hidden" : "visible");
-};
+});
 
 Dom.clearNode = function(node)
 {
