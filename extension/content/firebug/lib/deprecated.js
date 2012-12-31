@@ -4,6 +4,10 @@ define([
     "firebug/lib/trace"
 ],
 function(FBTrace) {
+"use strict";
+/**
+ * @util Util to warn and manage deprecations
+ */
 
 // ********************************************************************************************* //
 // Constants
@@ -32,7 +36,7 @@ Deprecated.deprecated = function(msg, fnc, args)
 {
     return function deprecationWrapper()
     {
-        if (!naggedCache.get(fnc))
+        if (!naggedCache.has(fnc))
         {
             log(msg, Components.stack.caller);
 

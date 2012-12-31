@@ -31,30 +31,40 @@ Dom.domUtils = Cc["@mozilla.org/inspector/dom-utils;1"].getService(Ci.inIDOMUtil
 // see also: 
 // - http://dev.w3.org/2006/webapi/selectors-api2/#findelements-relative
 // - http://www.w3.org/TR/selectors-api2/#the-scope-pseudo-class
-Dom.getChildByClass = function(node) // ,classname, classname, classname...
+
+/**
+ * selects the first child element which matches with the first classname,
+ * then the first child of it which matches with the second classname, and so on...
+ *
+ * @param {Element} elt the initial parent element
+ * @param {String} ...classnames the classnames
+ *
+ * @return {Element} the element matching with the last classname or null
+ */
+Dom.getChildByClass = function(elt/*, ...classnames*/)
 {
-    if (!node)
+    if (!elt)
     {
-        FBTrace.sysout("dom.getChildByClass; ERROR, no parent node!");
+        FBTrace.sysout("dom.getChildByClass; ERROR, no parent element!");
         return null;
     }
 
-    for (var i = 1; i < arguments.length; ++i)
+    for (var i = 1; i < arguments.length && elt; ++i)
     {
         var className = arguments[i];
-        var child = node.firstChild;
-        node = null;
+        var child = elt.firstChild;
+        elt = null;
         for (; child; child = child.nextSibling)
         {
             if (Css.hasClass(child, className))
             {
-                node = child;
+                elt = child;
                 break;
             }
         }
     }
 
-    return node;
+    return elt;
 };
 
 /**

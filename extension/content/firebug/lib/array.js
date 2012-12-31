@@ -6,12 +6,17 @@ define([
 ],
 function(FBTrace, Deprecated) {
 "use strict";
+/**
+ * @util Utility for Arrays
+ */
 
 // ********************************************************************************************* //
 // Constants
 
 const Ci = Components.interfaces;
+
 var Arr = {};
+/** @lends Firebug.Arr */
 
 // Array Generic methods
 // use them to call Array methods with Array-Like objects (arguments, String, NodeList...)
@@ -34,7 +39,7 @@ var ArrayGen = {};
         // xxxFlorent: TODO: [REST]
         ArrayGen[methodName] = function(thisObj/*, ...args*/)
         {
-            var args = Array.prototype.slice.call(args, 1);
+            var args = Array.prototype.slice.call(arguments, 1);
             return Array.prototype[methodName].apply(thisObj, args);
         };
     });
@@ -231,6 +236,11 @@ Arr.arrayInsert = function(array, index, other)
 /**
  * Filter out unique values of an array, saving only the first occurrence of
  * every value. In case the array is sorted, a faster path is taken.
+ *
+ * @param {Array or Array-Like object} ar the array
+ * @param {Boolean} if set to true, use the faster path
+ *
+ * @return {Array} the array deprived of duplication
  */
 Arr.unique = function(ar, sorted)
 {
@@ -264,6 +274,11 @@ Arr.unique = function(ar, sorted)
 
 /**
  * Sort an array and eliminate duplicates from it.
+ *
+ * @param {Array or Array-Like object} ar the array
+ * @param {Function} sortFunc the function used to sort the array (optional)
+ *
+ * @return {Array} the sorted array
  */
 Arr.sortUnique = function(ar, sortFunc)
 {
@@ -273,13 +288,15 @@ Arr.sortUnique = function(ar, sortFunc)
 };
 
 /**
+ * @deprecated use Arr.sortUnique and/or Array.prototype.concat instead
  * Merge together two arrays, sort the result, and eliminate any duplicates.
  * Deprecated.
  */
-Arr.merge = function(arr1, arr2, sortFunc)
+Arr.merge = Deprecated.deprecated("use Arr.sortUnique and/or Array.prototype.concat instead",
+function(arr1, arr2, sortFunc)
 {
     return Arr.sortUnique(arr1.concat(arr2), sortFunc);
-};
+});
 
 // ********************************************************************************************* //
 

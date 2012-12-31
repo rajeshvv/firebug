@@ -4,8 +4,14 @@ define([
     "firebug/lib/trace",
     "firebug/lib/string",
     "firebug/lib/deprecated",
+    "firebug/lib/function",
 ],
-function(FBTrace, Str, Deprecated) {
+function(FBTrace, Str, Deprecated, Func) {
+"use strict";
+// xxxFlorent: TODO add that specific tag in jsdoc...
+/**
+ * @util Utility for objects
+ */
 
 // ********************************************************************************************* //
 // Constants
@@ -13,56 +19,29 @@ function(FBTrace, Str, Deprecated) {
 var Cu = Components.utils;
 
 var Obj = {};
+/** @lends Lib.Obj */
 
 // ********************************************************************************************* //
 
-// fn, thisObject, args => thisObject.fn(arguments, args);
-Obj.bind = Deprecated.deprecated("use either (depending on the case): Obj.bindRight, Obj.bindFixed"+
-" or Function.prototype.bind instead", function()
-{
-    return Obj.bindRight.apply(this, arguments);
-});
-
 // xxxFlorent: TODO: [REST]
-/**
- * Creates a new function that, when called, uses the provided `this` value and appends the provided
- * arguments. Note that it differs from Function.prototype.bind which prepends the provided 
- * arguments (that is why this function is called bindRight).
- *
- * @param {Function} fn the function to bind
- * @param {?} thisObject the object to pass as the `this` value
- * @param {?} ...args the series of parameters to pass to the new function
- *
- * @return {Function} the new function
- */
-Obj.bindRight = function(fn, thisObject/*, ...origArgs*/)
-{
-    var origArgs = Array.prototype.slice.call(arguments, 2);
-    return function(/*...additionalArgs*/)
-    {
-        var additionalArgs = Array.prototype.slice.call(arguments);
-        return fn.apply(thisObject, additionalArgs.concat(origArgs));
-    };
-}
 
-// xxxFlorent: TODO: [REST]
-/**
- * Creates a new function that, when called, uses the provided `this` value and arguments.
- * At the contrary of `Function.prototype.bind`, any parameter provided at the call is ignored.
- *
- * @param {Function} fn the function to bind
- * @param {?} thisObject the object to pass as the `this` value
- * @param {?} ...args the series of parameters to pass to the new function
- *
- * @return {Function} the new Function
- */
-Obj.bindFixed = function(fn, thisObject/*, ...args*/)
-{
-    var args = Array.prototype.slice.call(arguments, 2);
-    return function() { return fn.apply(thisObject, args); };
-};
+Obj.bind = Deprecated.deprecated("Use either (depending on the case): Func.bindRight, "+
+"Func.bindFixed or Function.prototype.bind instead", Func.bindRight);
 
-Obj.extend = function()
+Obj.bindFixed = Deprecated.deprecated("Please, use Func.bindFixed instead now", Func.bindFixed);
+
+// xxxFlorent: [ES6-REST]
+/**
+ * Clone and extend the object (first parameters) with other objects (following parameters).
+ *
+ * For example:
+ *      var parentObj = {foo: "foo" };
+ *      var newObj = Obj.extend(parentObj, {bar: "bar"}); => {foo: "foo", bar: "bar"}
+ *
+ * @param {Object} parentObject the object to clone and extend
+ * @param {Object} ...extensions the extensions
+ */
+Obj.extend = function(parentObject/*, ...extensions*/)
 {
     if (arguments.length < 2)
     {
@@ -70,7 +49,9 @@ Obj.extend = function()
         throw new Error("Obj.extend on undefined object");
     }
 
-    var newOb = {};
+    var extensions = Array.prototype.slice.call(arguments, 1);
+    var newOb = Object.create(parentObject);
+
     for (var i = 0, len = arguments.length; i < len; ++i)
     {
         for (var prop in arguments[i])
