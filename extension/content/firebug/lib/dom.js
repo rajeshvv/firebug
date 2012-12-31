@@ -57,6 +57,12 @@ Dom.getChildByClass = function(node) // ,classname, classname, classname...
     return node;
 };
 
+/**
+ * Gets the ancestor of a node with a specific class name
+ * @param node {Node} Child node, for which to search the ancestor
+ * @param className {String} Class name of ancestor node
+ * @returns {Node} Ancestor node
+ */
 Dom.getAncestorByClass = function(node, className)
 {
     for (var parent = node; parent; parent = parent.parentNode)
@@ -68,6 +74,12 @@ Dom.getAncestorByClass = function(node, className)
     return null;
 };
 
+/**
+ * Gets the ancestor of a node with a specific tag name
+ * @param node {Node} Child node, for which to search the ancestor
+ * @param tagName {String} Tag name of the ancestor node
+ * @returns {Node} Ancestor node
+ */
 Dom.getAncestorByTagName = function(node, tagName)
 {
     for (var parent = node; parent; parent = parent.parentNode)
@@ -79,7 +91,9 @@ Dom.getAncestorByTagName = function(node, tagName)
     return null;
 };
 
-/* @Deprecated  Use native Firefox: node.getElementsByClassName(names).item(0) */
+/**
+ * @deprecated Use native Firefox node.getElementsByClassName(names).item(0)
+ */
 Dom.getElementByClass = Deprecated.deprecated("Use node.getElementsByClassName(names)"+
 ".item(0) or node.querySelector('.class') instead",
 function(node, className)  // className, className, ...
@@ -87,25 +101,30 @@ function(node, className)  // className, className, ...
     return Dom.getElementsByClass.apply(this,arguments).item(0);
 });
 
-/* @Deprecated  Use native Firefox: node.getElementsByClassName(names) */
+/**
+ * @deprecated Use native Firefox node.getElementsByClassName(names)
+ */
 Dom.getElementsByClass = Deprecated.deprecated("Use node.getElementsByClassName(names)",
 function(node, className)  // className, className, ...
 {
-    var args = Arr.cloneArray(arguments); args.splice(0, 1);
-    return node.getElementsByClassName(args.join(" "));
+    return node.getElementsByClassName(Array.prototype.slice.call(arguments, 1).join(" "));
 });
 
-Dom.getElementsByAttribute = Deprecated.deprecated("Use node.querySelectorAll(selector) instead",
+/**
+ * @deprecated Use native Firefox node.getElementsByClassName("[attrName=attrValue]")
+ */
+Dom.getElementsByAttribute = Deprecated.deprecated("Use node.querySelectorAll(\"[attrName=attrValue]\") instead",
 function(node, attrName, attrValue)
 {
     function iteratorHelper(node, attrName, attrValue, result)
     {
-        for (var child = node.firstChild; child; child = child.nextSibling)
+        for (var child = node.firstElementChild; child; child = child.nextElementSibling)
         {
             if (child.getAttribute(attrName) == attrValue)
                 result.push(child);
 
-            iteratorHelper(child, attrName, attrValue, result);
+            if (child.hasChildNodes())
+                iteratorHelper(child, attrName, attrValue, result);
         }
     }
 
@@ -114,6 +133,12 @@ function(node, attrName, attrValue)
     return result;
 });
 
+/**
+ * Checks whether a node is an ancestor of another node
+ * @param node {Node} Child node, for which to check the ancestor
+ * @param potentialAncestor {Node} Node to check
+ * @returns {Boolean} True if 'potentialAncestor' is an ancestor of 'node', otherwise false
+ */
 Dom.isAncestor = function(node, potentialAncestor)
 {
     for (var parent = node; parent; parent = parent.parentNode)
@@ -125,6 +150,11 @@ Dom.isAncestor = function(node, potentialAncestor)
     return false;
 };
 
+/**
+ * Gets the next element node
+ * @param node {Node} Node, for which to get the next element node
+ * @returns {Node} Next element node
+ */
 Dom.getNextElement = function(node)
 {
     while (node && node.nodeType != Node.ELEMENT_NODE)
@@ -133,6 +163,11 @@ Dom.getNextElement = function(node)
     return node;
 };
 
+/**
+ * Gets the previous element node
+ * @param node {Node} Node, for which to get the previous element node
+ * @returns {Node} Previous element node
+ */
 Dom.getPreviousElement = function(node)
 {
     while (node && node.nodeType != Node.ELEMENT_NODE)
@@ -141,6 +176,11 @@ Dom.getPreviousElement = function(node)
     return node;
 };
 
+/**
+ * Gets the body element of an HTML document or the document element for non-HTML documents
+ * @param doc {Document} Document, for which to get the body element or document element
+ * @returns {Node} Body element or document element
+ */
 Dom.getBody = function(doc)
 {
     if (doc.body)
