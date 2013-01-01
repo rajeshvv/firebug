@@ -1,6 +1,7 @@
 /* See license.txt for terms of usage */
 
 define([], function() {
+"use strict";
 
 // ********************************************************************************************* //
 // Constants

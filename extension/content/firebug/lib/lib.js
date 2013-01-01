@@ -36,7 +36,7 @@ function(Obj, Xpcom, Locale, Events, Options, Deprecated, Wrapper, Url, SourceLi
 
 // ********************************************************************************************* //
 
-var FBL = window.FBL || {};  // legacy.js adds top.FBL, FIXME, remove after iframe version
+var FBL = window.FBL || {};  // legacy.js adds top.FBL, FIXME, remove after iframe version (xxxFlorent: what is that "iframe" version?)
 
 // ********************************************************************************************* //
 // xxxHonza: all deprecated API should be removed from 1.9+

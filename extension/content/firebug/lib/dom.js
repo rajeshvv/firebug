@@ -31,14 +31,14 @@ Dom.domUtils = Cc["@mozilla.org/inspector/dom-utils;1"].getService(Ci.inIDOMUtil
 // ********************************************************************************************* //
 // DOM APIs
 
-// xxxFlorent: node.find() or document.querySelector + ":scope" pseudo-class
+// xxxFlorent: [SELECTOR_API2-FIND]; node.find() or document.querySelector + ":scope" pseudo-class
 // could make this method deprecated soon.
 // see also: 
 // - http://dev.w3.org/2006/webapi/selectors-api2/#findelements-relative
 // - http://www.w3.org/TR/selectors-api2/#the-scope-pseudo-class
 
 /**
- * selects the first child element which matches with the first classname,
+ * Selects the first child element which matches with the first classname,
  * then the first child of it which matches with the second classname, and so on...
  *
  * @param {Element} elt the initial parent element
@@ -385,11 +385,23 @@ Dom.hide = Deprecated.deprecated("set elt.style.visibility instead", function(el
     elt.style.visibility = (hidden ? "hidden" : "visible");
 });
 
-Dom.clearNode = function(node)
+/**
+ * @deprecated use the following instead: `node.textNode = "";`
+ * Clears a node
+ *
+ * @param {Node} node the node to clear
+ */
+Dom.clearNode = Deprecated.deprecated("use the following instead: `node.textNode = \"\";`",
+function(node)
 {
     node.textContent = "";
-};
+});
 
+/**
+ * Erases a node
+ *
+ * @param {Node} the node to erase
+ */
 Dom.eraseNode = function(node)
 {
     while (node.lastChild)
@@ -398,16 +410,26 @@ Dom.eraseNode = function(node)
 
 // ********************************************************************************************* //
 
-Dom.isNode = function(o)
+/**
+ * Returns true if the passed object is a node
+ *
+ * @param {Object} obj the object to test
+ *
+ * @return {Boolean} true if the passed object is a node, false otherwise
+ */
+Dom.isNode = function(obj)
 {
-    try {
-        return o && o instanceof window.Node;
+    try
+    {
+        return obj && obj instanceof window.Node;
     }
-    catch (ex) {
+    catch (ex)
+    {
+        // xxxFlorent: useful?
         return false;
     }
 };
-
+// xxxFlorent: I'm too lazy... I guess we should deprecate them
 Dom.isElement = function(o)
 {
     try {
@@ -443,13 +465,14 @@ Dom.hasChildElements = function(node)
 };
 
 // ********************************************************************************************* //
-
+// xxxFlorent: [SELECTOR_API2-FIND]
 Dom.getNextByClass = function(root, state)
 {
     function iter(node) { return node.nodeType == Node.ELEMENT_NODE && Css.hasClass(node, state); }
     return Dom.findNext(root, iter);
 };
 
+// xxxFlorent: [SELECTOR_API2-FIND]
 Dom.getPreviousByClass = function(root, state)
 {
     function iter(node) { return node.nodeType == Node.ELEMENT_NODE && Css.hasClass(node, state); }
@@ -631,7 +654,7 @@ Dom.getOffsetSize = function(elt)
 };
 
 /**
- * Get the next scrollable ancestor
+ * Gets the next scrollable ancestor
  * @param {Object} element Element to search the ancestor for
  * @returns {Object} Scrollable ancestor
  */
@@ -745,7 +768,7 @@ Dom.linesIntoCenterView = function(element, scrollBox)  // {before: int, after: 
 
 /**
  * Scrolls an element into view
- * @param {Object} element Element to scroll to
+ * @param {Element} element Element to scroll to
  * @param {Object} scrollBox Scrolled element (Must be an ancestor of "element" or
  *     null for automatically determining the ancestor) 
  * @param {String} alignmentX Horizontal alignment for the element
@@ -858,6 +881,12 @@ Dom.scrollIntoCenterView = function(element, scrollBox, notX, notY)
         notY ? "none" : "centerOrTop");
 };
 
+/**
+ * Scrolls an element of a menu popup into view.
+ *
+ * @popup {XULElement} the menu popup
+ * @item {XULElement} the item of the popup
+ */
 Dom.scrollMenupopup = function(popup, item)
 {
     var doc = popup.ownerDocument;
@@ -891,7 +920,7 @@ Dom.scrollMenupopup = function(popup, item)
 // ********************************************************************************************* //
 // MappedData
 
-function getElementData(element)
+function getNodeData(element)
 {
     var elementData;
 
@@ -909,28 +938,51 @@ function getElementData(element)
     return elementData;
 }
 
-Dom.getMappedData = function(element, key)
+/**
+ * Returns stored data about a node.
+ *
+ * @param {Node} node the node
+ * @param {?} key the key
+ *
+ * @return {?} the data
+ */
+Dom.getMappedData = function(node, key)
 {
-    var elementData = getElementData(element);
-    return elementData[key];
+    var nodeData = getNodeData(node);
+    return nodeData[key];
 }
 
-Dom.setMappedData = function(element, key, value)
+/**
+ * Stores a data about the given node.
+ *
+ * @param {Node} node the node
+ * @param {?} key the key
+ * @param {?} value the data to store
+ *
+ */
+Dom.setMappedData = function(node, key, value)
 {
-    if (!Dom.isNode(element))
-        throw new TypeError("expected an element as the first argument");
+    if (!Dom.isNode(node))
+        throw new TypeError("expected an node as the first argument");
 
     if (typeof key !== "string")
         throw new TypeError("the key argument must be a string");
 
-    var elementData = getElementData(element);
-    elementData[key] = value;
+    var nodeData = getNodeData(node);
+    nodeData[key] = value;
 }
 
-Dom.deleteMappedData = function(element, key)
+/**
+ * Deletes the data about the given node.
+ *
+ * @param {Node} node the node
+ * @param {?} key the key
+ *
+ */
+Dom.deleteMappedData = function(node, key)
 {
-    var elementData = getElementData(element);
-    delete elementData[key];
+    var nodeData = getNodeData(node);
+    delete nodeData[key];
 }
 
 // ********************************************************************************************* //

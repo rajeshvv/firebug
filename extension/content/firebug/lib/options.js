@@ -2,10 +2,13 @@
 
 define([
     "firebug/lib/events",
-    "firebug/lib/trace"
+    "firebug/lib/trace",
+    "firebug/lib/deprecated",
 ],
-function factoryOptions(Events, FBTrace) {
+function factoryOptions(Events, FBTrace, Deprecated) {
+"use strict";
 
+// xxxFlorent: maybe parts of these methods should be in a seperate module
 // ********************************************************************************************* //
 // Constants
 
@@ -86,6 +89,10 @@ const prefNames =  // XXXjjb TODO distribute to modules
 
 var optionUpdateMap = {};
 
+var listeners = [];
+
+var prefDomain = "extensions.firebug";
+
 // ********************************************************************************************* //
 
 /**
@@ -96,16 +103,21 @@ var optionUpdateMap = {};
 var Options =
 /** @lends Options */
 {
-    prefDomain: "extensions.firebug",
-
-    getPrefDomain: function()
-    {
-        return this.prefDomain;
+    // xxxFlorent: do we allow this syntax? (https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Operators/get)
+    get prefDomain(){
+        return prefDomain;
     },
 
-    initialize: function(prefDomain)
+    // this function is less used than direct access to Options.prefDomain. 
+    // So, this one is deprecated
+    getPrefDomain: Deprecated.deprecated("Use Options.prefDomain instead", function()
     {
-        this.prefDomain = prefDomain;
+        return prefDomain;
+    }),
+
+    initialize: function(_prefDomain)
+    {
+        prefDomain = _prefDomain;
 
         if (FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("options.initialize with prefDomain " + this.prefDomain);
@@ -121,18 +133,16 @@ var Options =
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Custom Listeners
 
-    listeners: [],
-
     addListener: function(listener)
     {
-        this.listeners.push(listener);
+        listeners.push(listener);
     },
 
     removeListener: function(listener)
     {
-        for (var i=0; i<this.listeners.length; ++i)
-            if (this.listeners[i] == listener)
-                return this.listeners.splice(i, 1);
+        for (var i=0; i<listeners.length; ++i)
+            if (listeners[i] == listener)
+                return listeners.splice(i, 1);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -163,7 +173,7 @@ var Options =
             optionUpdateMap[name] = 1;
             Firebug[name] = value;
 
-            Events.dispatch(this.listeners, "updateOption", [name, value]);
+            Events.dispatch(listeners, "updateOption", [name, value]);
         }
         catch (err)
         {

@@ -137,6 +137,7 @@ System.getStringDataFromClipboard = function()
 // ********************************************************************************************* //
 // Firebug Version Comparator
 
+// xxxFlorent: IMO, wrong place...
 /**
  * Compare expected Firebug version with the current Firebug installed.
  * @param {Object} expectedVersion Expected version of Firebug.

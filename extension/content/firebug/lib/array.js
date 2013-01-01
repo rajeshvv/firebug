@@ -55,7 +55,7 @@ Arr.ArrayGen = ArrayGen;
 
 Arr.isArray = Deprecated.deprecated("Use Array.isArray instead", Array.isArray);
 /**
- * Return true if the given object is an Array or an Array-Like object
+ * Returns true if the given object is an Array or an Array-Like object
  *
  * @param obj {?} the object
  * @return true if it is an array-like object or false otherwise
@@ -234,7 +234,7 @@ Arr.arrayInsert = function(array, index, other)
 }
 
 /**
- * Filter out unique values of an array, saving only the first occurrence of
+ * Filters out unique values of an array, saving only the first occurrence of
  * every value. In case the array is sorted, a faster path is taken.
  *
  * @param {Array or Array-Like object} ar the array
@@ -273,7 +273,7 @@ Arr.unique = function(ar, sorted)
 };
 
 /**
- * Sort an array and eliminate duplicates from it.
+ * Sorts an array and eliminate duplicates from it.
  *
  * @param {Array or Array-Like object} ar the array
  * @param {Function} sortFunc the function used to sort the array (optional)

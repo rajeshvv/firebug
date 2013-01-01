@@ -17,6 +17,7 @@ var Json = {};
 // ********************************************************************************************* //
 // JSON
 
+// xxxFlorent: What is the advantages of this method over JSON.parse ?
 Json.parseJSONString = function(jsonString, originURL)
 {
     if (FBTrace.DBG_JSONVIEWER)
@@ -30,11 +31,13 @@ Json.parseJSONString = function(jsonString, originURL)
     {
         jsonString = matches[1];
 
-        if (jsonString[0] == "\\" && jsonString[1] == "n")
+        // removes the Newline escaped caracters at the beginning and at the end of the string
+        jsonString = jsonString.replace(/(^\\n|\\n$)/g, "");
+        /*if (jsonString[0] == "\\" && jsonString[1] == "n")
             jsonString = jsonString.substr(2);
 
         if (jsonString[jsonString.length-2] == "\\" && jsonString[jsonString.length-1] == "n")
-            jsonString = jsonString.substr(0, jsonString.length-2);
+            jsonString = jsonString.substr(0, jsonString.length-2);*/
     }
 
     if (jsonString.indexOf("&&&START&&&"))
@@ -90,10 +93,6 @@ Json.parseJSONString = function(jsonString, originURL)
 
     return null;
 };
-
-Json.parseJSONPString = function(jsonString, originURL)
-{
-}
 
 // ********************************************************************************************* //
 

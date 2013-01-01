@@ -32,7 +32,7 @@ Obj.bindFixed = Deprecated.deprecated("Please, use Func.bindFixed instead now", 
 
 // xxxFlorent: [ES6-REST]
 /**
- * Clone and extend the object (first parameters) with other objects (following parameters).
+ * Clones and extend the object (first parameters) with other objects (following parameters).
  *
  * For example:
  *      var parentObj = {foo: "foo" };
@@ -61,6 +61,15 @@ Obj.extend = function(parentObject/*, ...extensions*/)
     return newOb;
 };
 
+/**
+ * Creates a new instance inheriting from a parent "class".
+ * That class is then extended with child properties.
+ *
+ * @param {Object} protototypeParent the parent "class" prototype
+ * @param {Object} childProperties the properties extending the new object
+ *
+ * @return {Object} the new object
+ */
 Obj.descend = function(prototypeParent, childProperties)
 {
     function protoSetter() {};
@@ -156,8 +165,14 @@ Obj.hasProperties = function(ob, nonEnumProps, ownPropsOnly)
     return false;
 };
 
+/**
+ * Returns the prototype of an object, or null if the function fails to do so.
+ */
 Obj.getPrototype = function(ob)
 {
+    // faster way than raising exceptions
+    if (!(ob instanceof Object))
+        return null;
     try
     {
         return ob.prototype;
@@ -165,18 +180,37 @@ Obj.getPrototype = function(ob)
     return null;
 };
 
-
+/**
+ * Returns a unique ID (random integer between 0 and 65536)
+ *
+ * @return {Number} the random number
+ */
 Obj.getUniqueId = function()
 {
     return this.getRandomInt(0,65536);
 }
 
+/**
+ * Returns a random integer between min and max
+ *
+ * @param {Number} min the minimum
+ * @param {Number} max the maximum
+ *
+ * @return {Number} the random number
+ */
 Obj.getRandomInt = function(min, max)
 {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-// Cross Window instanceof; type is local to this window
+/**
+ * Cross Window instanceof; type is local to this window
+ *
+ * @param {Object} obj the object to test
+ * @param {?} type the type
+ *
+ * @returns {Boolean} true if the test succeeded, false otherwise
+ */
 Obj.XW_instanceof = function(obj, type)
 {
     if (obj instanceof type)

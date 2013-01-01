@@ -19,7 +19,7 @@ var Func = {};
 
 
 /**
- * Create a new function that, when called, uses the provided `this` value and appends the provided
+ * Creates a new function that, when called, uses the provided `this` value and appends the provided
  * arguments. Note that it differs from Function.prototype.bind which prepends the provided 
  * arguments (that is why this function is called bindRight).
  *
@@ -41,7 +41,7 @@ Func.bindRight = function(fn, thisObject/*, ...origArgs*/)
 
 // xxxFlorent: TODO: [REST]
 /**
- * Create a new function that, when called, uses the provided `this` value and arguments.
+ * Creates a new function that, when called, uses the provided `this` value and arguments.
  * At the contrary of `Function.prototype.bind`, any parameter provided at the call is ignored.
  *
  * @param {Function} fn the function to bind

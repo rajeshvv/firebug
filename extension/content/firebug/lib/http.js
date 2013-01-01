@@ -154,7 +154,7 @@ Http.readPostTextFromRequest = function(request, context)
 };
 
 /**
- * Remove headers from post body, https://bugzilla.mozilla.org/show_bug.cgi?id=649338
+ * Removes headers from post body, https://bugzilla.mozilla.org/show_bug.cgi?id=649338
  * 
  * @param {Object} request Channel implementing nsIUploadChannel2
  * @param {Object} text Extracted text (can include headers at the beginning).
