@@ -57,6 +57,22 @@ Deprecated.log = function(msg)
     return log(msg, Components.stack.caller);
 }
 
+// xxxFlorent: might have to be improved. Don't hesitate to tell what you think about it
+// xxxFlorent: TODO add parameters in comments
+/**
+ * marks a property as deprecated (and read-only)
+ *
+ *
+ */
+Deprecated.deprecatedROProp = function(obj, propName, msg, value)
+{
+    var descriptor = {
+        get: Deprecated.deprecated(msg, function(){ return value; }),
+    };
+
+    Object.defineProperty(obj, propName, descriptor);
+};
+
 
 // ********************************************************************************************* //
 // Local helpers

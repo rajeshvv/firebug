@@ -166,19 +166,21 @@ Obj.hasProperties = function(ob, nonEnumProps, ownPropsOnly)
 };
 
 /**
+ * @deprecated use <object>.prototype instead (+ clever checks before)
+ *
  * Returns the prototype of an object, or null if the function fails to do so.
+ *
+ * 
  */
-Obj.getPrototype = function(ob)
+Obj.getPrototype = Deprecated.deprecated("use <object>.prototype instead (+ clever checks before)",
+function(ob)
 {
-    // faster way than raising exceptions
-    if (!(ob instanceof Object))
-        return null;
     try
     {
         return ob.prototype;
     } catch (exc) {}
     return null;
-};
+});
 
 /**
  * Returns a unique ID (random integer between 0 and 65536)
@@ -203,15 +205,19 @@ Obj.getRandomInt = function(min, max)
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+// xxxFlorent: not sure it is true... But I couldn't find any case where `instanceof` 
+//             didn't work correctly cross-window
 /**
- * Cross Window instanceof; type is local to this window
+ * @deprecated use `instanceof` instead
+ *
+ * Cross Window instanceof
  *
  * @param {Object} obj the object to test
- * @param {?} type the type
+ * @param {?} type the type (local to this window)
  *
  * @returns {Boolean} true if the test succeeded, false otherwise
  */
-Obj.XW_instanceof = function(obj, type)
+Obj.XW_instanceof = Deprecated.deprecated("use `instanceof` instead", function(obj, type)
 {
     if (obj instanceof type)
         return true;  // within-window test
@@ -237,7 +243,7 @@ Obj.XW_instanceof = function(obj, type)
 
     // https://developer.mozilla.org/en/Core_JavaScript_1.5_Guide/Property_Inheritance_Revisited
     // /Determining_Instance_Relationships
-}
+});
 
 /**
  * Tells if the given property of the provided object is a non-native getter or not.

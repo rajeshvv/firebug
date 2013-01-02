@@ -386,12 +386,12 @@ Dom.hide = Deprecated.deprecated("set elt.style.visibility instead", function(el
 });
 
 /**
- * @deprecated use the following instead: `node.textNode = "";`
+ * @deprecated use the following instead: `node.textContent = "";`
  * Clears a node
  *
  * @param {Node} node the node to clear
  */
-Dom.clearNode = Deprecated.deprecated("use the following instead: `node.textNode = \"\";`",
+Dom.clearNode = Deprecated.deprecated("use the following instead: `node.textContent = \"\";`",
 function(node)
 {
     node.textContent = "";

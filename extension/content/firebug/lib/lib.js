@@ -33,10 +33,11 @@ define([
 function(Obj, Xpcom, Locale, Events, Options, Deprecated, Wrapper, Url, SourceLink,
     StackFrame, Css, Dom, Http, Win, Search, Xpath, Str, Xml, Persist, Arr, System, Json,
     Fonts, Menu, ToggleBranch, Debug, Keywords, Firefox) {
-
+// xxxFlorent: Check with  JSHint
+"use strict";
 // ********************************************************************************************* //
 
-var FBL = window.FBL || {};  // legacy.js adds top.FBL, FIXME, remove after iframe version (xxxFlorent: what is that "iframe" version?)
+var FBL = window.FBL || {};  // legacy.js adds top.FBL, FIXME, remove after iframe version 
 
 // ********************************************************************************************* //
 // xxxHonza: all deprecated API should be removed from 1.9+
@@ -44,83 +45,21 @@ var FBL = window.FBL || {};  // legacy.js adds top.FBL, FIXME, remove after ifra
 
 // Backward compatibility with extensions
 // deprecated
-for (var p in Obj)
-    FBL[p] = Obj[p];
 
-for (var p in Xpcom)
-    FBL[p] = Xpcom[p];
+// xxxFlorent: add a page in the wiki explaining how to use AMD in Firebug-related projects
+const deprecationMessage = "Don't use FBL anymore. Please, use AMD instead";
 
-for (var p in Locale)
-    FBL[p] = Locale[p];
+var libs = [Obj, Xpcom, Locale, Events, Wrapper, Url, StackFrame, Css, Dom, Http, Win, Search,
+Xpath, Str, Xml, Persist, Arr, System, Json, Fonts, Menu, ToggleBranch, Debug, Keywords, Firefox, 
+Deprecated];
 
-for (var p in Events)
-    FBL[p] = Events[p];
+libs.forEach(function(lib)
+{
+    for (var p in lib)
+        FBL[p] = Deprecated.deprecated(deprecationMessage, lib[p]);
+});
 
-for (var p in Wrapper)
-    FBL[p] = Wrapper[p];
-
-for (var p in Url)
-    FBL[p] = Url[p];
-
-for (var p in StackFrame)
-    FBL[p] = StackFrame[p];
-
-for (var p in Css)
-    FBL[p] = Css[p];
-
-for (var p in Dom)
-    FBL[p] = Dom[p];
-
-for (var p in Http)
-    FBL[p] = Http[p];
-
-for (var p in Win)
-    FBL[p] = Win[p];
-
-for (var p in Search)
-    FBL[p] = Search[p];
-
-for (var p in Xpath)
-    FBL[p] = Xpath[p];
-
-for (var p in Str)
-    FBL[p] = Str[p];
-
-for (var p in Xml)
-    FBL[p] = Xml[p];
-
-for (var p in Persist)
-    FBL[p] = Persist[p];
-
-for (var p in Arr)
-    FBL[p] = Arr[p];
-
-for (var p in System)
-    FBL[p] = System[p];
-
-for (var p in Json)
-    FBL[p] = Json[p];
-
-for (var p in Fonts)
-    FBL[p] = Fonts[p];
-
-for (var p in Menu)
-    FBL[p] = Menu[p];
-
-for (var p in ToggleBranch)
-    FBL[p] = ToggleBranch[p];
-
-for (var p in Debug)
-    FBL[p] = Debug[p];
-
-for (var p in Keywords)
-    FBL[p] = Keywords[p];
-
-for (var p in Firefox)
-    FBL[p] = Firefox[p];
-
-FBL.deprecated = Deprecated.deprecated;
-FBL.SourceLink = SourceLink.SourceLink;
+Deprecated.deprecatedROProp(FBL, "SourceLink", deprecationMessage, SourceLink.SourceLink);
 
 //FBL.ErrorCopy = FirebugReps.ErrorCopy;
 //FBL.ErrorMessageObj = FirebugReps.ErrorMessageObj;
@@ -128,17 +67,19 @@ FBL.SourceLink = SourceLink.SourceLink;
 //FBL.PropertyObj = FirebugReps.PropertyObj;
 
 // deprecated
-FBL.$ = function(id, doc)
+FBL.$ = Deprecated.deprecated("Use document.getElementById(id) instead", function(id, doc)
 {
     if (doc)
         return doc.getElementById(id);
     else
         return document.getElementById(id);
-};
+});
 
 // deprecated
-FBL.jsd = Components.classes["@mozilla.org/js/jsd/debugger-service;1"].
+var jsd = Components.classes["@mozilla.org/js/jsd/debugger-service;1"].
     getService(Components.interfaces.jsdIDebuggerService);
+
+Deprecated.deprecatedROProp(FBL, "jsd", "Access to JSD through Components.classes", jsd);
 
 // ********************************************************************************************* //
 // Constants
@@ -149,14 +90,18 @@ try
     Components.utils["import"]("resource://firebug/firebug-service.js");
 
     // deprecated
-    FBL.fbs = fbs; // left over from component.
+
+    Deprecated.deprecatedROProp(FBL, "fbs", "Access to Firebug Service (FBS) through "+
+        "Components.utils", fbs);
 }
 catch (err)
 {
 }
 
 // deprecated
-FBL.reUpperCase = /[A-Z]/;
+// FBL.reUpperCase = /[A-Z]/;
+Deprecated.deprecatedROProp(FBL, "reUpperCase", "Use the following RegExp instead: /[A-Z]/",
+    /[A-Z]/);
 
 // ********************************************************************************************* //
 // Registration
