@@ -1,15 +1,19 @@
 /* See license.txt for terms of usage */
 
-// xxxHonza: remove deps on FBL.
+// xxxFlorent: needs vigilant tests
+
 define([
-    "firebug/lib/lib",
-    "firebug/lib/string"
+    "firebug/lib/string",
 ],
-function(FBL, Str) {
+function(Str) {
 
 // ********************************************************************************************* //
 
 var Domplate = {};
+
+// xxxFlorent: not so pretty... maybe create a log function,
+//             so either FBTrace.sysout or console.log are called (when a debug variable is set)
+window.FBTrace = window.FBTrace || {};
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -70,8 +74,8 @@ domplate.context = function(context, fn)
     domplate.topContext = lastContext;
 };
 
-// xxxHonza: the only global should be Firebug object.
-Domplate.domplate = FBL.domplate = window.domplate = domplate;
+// xxxFlorent: should we keep that?
+window.domplate = domplate;
 
 Domplate.TAG = function()
 {
@@ -134,7 +138,7 @@ DomplateTag.prototype =
             var val = parseValue(args[name]);
             readPartNames(val, this.vars);
 
-            if (Str.hasPrefix(name, "on"))
+            if (name.lastIndexOf("on", 0) === 0)
             {
                 var eventName = name.substr(2);
                 if (!this.listeners)
@@ -227,6 +231,7 @@ DomplateTag.prototype =
 
         function __escape__(value)
         {
+            // xxxFlorent: What should do that function? no API or safe workaround to do this?
             return Str.escapeForElementAttribute(value);
         }
 
@@ -581,7 +586,7 @@ DomplateTag.prototype =
         {
             var nBlocks = 2*path.length + 2;
             var genTrace = "FBTrace.sysout(\'"+blocks.slice(-nBlocks).join("").replace("\n","")+
-                "\'+'->'+(node?FBL.getElementHTML(node):'null'), node);\n";
+                "\'+'->'+(node?node.outerHTML:'null'), node);\n";
             blocks.push(genTrace);
         }
     },
@@ -695,7 +700,7 @@ DomplateEmbed.prototype = copyObject(DomplateTag.prototype,
                 beginBlock).join("").replace("\n"," "), {path: path});
 
             blocks.push("FBTrace.sysout('__link__ called with node:'+" +
-                "FBL.getElementHTML(node), node);\n");
+                "node.outerHTML, node);\n");
         }
 
         return embedName;
@@ -744,7 +749,7 @@ DomplateLoop.prototype = copyObject(DomplateTag.prototype,
         {
             // We have a function with optional aruments or just one variable
             var part = this.iter.parts[0];
-            
+
             // Join our function arguments or variables
             // If the user has supplied multiple variables without a function
             // this will create an invalid result and we should probably add an
@@ -1031,11 +1036,6 @@ function ArrayIterator(array)
 
 function StopIteration() {}
 
-FBL.$break = function()
-{
-    throw StopIteration;
-};
-
 // ********************************************************************************************* //
 
 var Renderer =
@@ -1272,9 +1272,7 @@ function defineTags()
         var fn = createTagHandler(tagName);
         var fnName = tagName.toUpperCase();
 
-        // xxxHonza: Domplate is injected into FBL namespace only for backward
-        // compatibility with extensions.
-        Domplate[fnName] = FBL[fnName]= fn;
+        Domplate[fnName] = fn;
     }
 
     function createTagHandler(tagName)
@@ -1286,12 +1284,10 @@ function defineTags()
     }
 }
 
-// xxxHonza: Domplate is injected into FBL namespace only for backward
-// compatibility with extensions.
-// We need to mark this as deprecated.
-FBL.TAG = Domplate.TAG;
-FBL.FOR = Domplate.FOR;
-FBL.DomplateTag = Domplate.DomplateTag;
+// xxxFlorent: each Domplate members are aliased in FBL in lib.js for backward compatibility
+// FBL.TAG = Domplate.TAG;
+// FBL.FOR = Domplate.FOR;
+// FBL.DomplateTag = Domplate.DomplateTag;
 
 defineTags(
     "a", "button", "br", "canvas", "col", "colgroup", "div", "fieldset", "form", "h1", "h2",

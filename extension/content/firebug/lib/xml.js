@@ -103,6 +103,7 @@ Xml.isSelfClosing = function(element)
     return (Xml.selfClosingTags.hasOwnProperty(tag));
 };
 
+// xxxFlorent: could be replaced with outerHTML... if only Firebug.shouldIgnore was not called
 Xml.getElementHTML = function(element)
 {
     function toHTML(elt)

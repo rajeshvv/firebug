@@ -28,11 +28,12 @@ define([
     "firebug/dom/toggleBranch",
     "firebug/trace/debug",
     "firebug/lib/keywords",
+    "firebug/lib/domplate",
     "firebug/chrome/firefox"
 ],
 function(Obj, Xpcom, Locale, Events, Options, Deprecated, Wrapper, Url, SourceLink,
     StackFrame, Css, Dom, Http, Win, Search, Xpath, Str, Xml, Persist, Arr, System, Json,
-    Fonts, Menu, ToggleBranch, Debug, Keywords, Firefox) {
+    Fonts, Menu, ToggleBranch, Debug, Keywords, Domplate, Firefox) {
 // xxxFlorent: Check with  JSHint
 "use strict";
 // ********************************************************************************************* //
@@ -51,7 +52,7 @@ const deprecationMessage = "Don't use FBL anymore. Please, use AMD instead";
 
 var libs = [Obj, Xpcom, Locale, Events, Wrapper, Url, StackFrame, Css, Dom, Http, Win, Search,
 Xpath, Str, Xml, Persist, Arr, System, Json, Fonts, Menu, ToggleBranch, Debug, Keywords, Firefox, 
-Deprecated];
+Deprecated ,Domplate];
 
 libs.forEach(function(lib)
 {
@@ -73,6 +74,15 @@ FBL.$ = Deprecated.deprecated("Use document.getElementById(id) instead", functio
         return doc.getElementById(id);
     else
         return document.getElementById(id);
+});
+
+// xxxFlorent: it appears likely that this $break function is not used anywhere...
+//             StopIteration was private to domplate.js
+function StopIteration() {}
+
+FBL.$break = Deprecated.deprecated("Use the break statement instead", function()
+{
+    throw StopIteration;
 });
 
 // deprecated
