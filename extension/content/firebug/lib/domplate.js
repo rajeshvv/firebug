@@ -75,7 +75,7 @@ domplate.context = function(context, fn)
 };
 
 // xxxFlorent: should we keep that?
-window.domplate = domplate;
+Domplate.domplate = domplate;
 
 Domplate.TAG = function()
 {
