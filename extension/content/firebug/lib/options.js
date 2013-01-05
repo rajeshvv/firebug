@@ -96,7 +96,8 @@ var prefDomain = "extensions.firebug";
 // ********************************************************************************************* //
 
 /**
- * Interface to preference storage.
+ * @lib Util to manage firefox preferences <br/>
+ *
  * Panels send commands to request option change.
  * Backend responds with events when the change is accepted.
  */
@@ -104,7 +105,8 @@ var Options =
 /** @lends Options */
 {
     // xxxFlorent: do we allow this syntax? (https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Operators/get)
-    get prefDomain(){
+    get prefDomain()
+    {
         return prefDomain;
     },
 

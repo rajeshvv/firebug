@@ -6,17 +6,17 @@ define([
 ],
 function(FBTrace, Deprecated) {
 "use strict";
-/**
- * @util Utility for Arrays
- */
-
 // ********************************************************************************************* //
 // Constants
 
 const Ci = Components.interfaces;
 
+/**
+ * @name Arr
+ * @lib Utility for Arrays
+ */
 var Arr = {};
-/** @lends Firebug.Arr */
+
 
 // Array Generic methods
 // use them to call Array methods with Array-Like objects (arguments, String, NodeList...)
@@ -53,11 +53,14 @@ Arr.ArrayGen = ArrayGen;
 // ********************************************************************************************* //
 // Arrays
 
+/**
+ * @deprecated use Array.isArray instead
+ */ 
 Arr.isArray = Deprecated.deprecated("Use Array.isArray instead", Array.isArray);
 /**
  * Returns true if the given object is an Array or an Array-Like object
  *
- * @param obj {?} the object
+ * @param {*} obj The object
  * @return true if it is an array-like object or false otherwise
  */
 Arr.isArrayLike = function(obj)
@@ -108,7 +111,7 @@ Arr.keys = Deprecated.deprecated("Use Object.keys instead", function(map)
 /**
  * Returns the values of an object
  *
- * @param map {?} the object
+ * @param {*} map The object
  *
  * @return {Array} the values
  */
@@ -144,8 +147,8 @@ Arr.values = function(map)
 /**
  * Removes an item from an array or an array-like object
  *
- * @param list {Array or Array-Like object} the array
- * @param item {?} the item to remove from the object
+ * @param {Array or Array-Like object} list The array
+ * @param {*} item The item to remove from the object
  *
  * @return true if an item as been removed, false otherwise
  */
@@ -162,8 +165,8 @@ Arr.remove = function(list, item)
 /**
  * Same as Arr.remove but removes all the occurences of item
  *
- * @param list {Array or Array-Like object} the array
- * @param item {?} the item to remove from the object
+ * @param {Array or Array-Like object} list The array
+ * @param {*} item The item to remove from the object
  *
  * @return true if an item as been removed, false otherwise
  */
@@ -177,7 +180,11 @@ Arr.removeAll = function(list, item)
     return (iter > 0);
 }
 
-Arr.sliceArray = Deprecated.deprecated("use Array.prototype.slice or Array.slice instead",
+/**
+ * Returns a shallow copy of a portion of an array.
+ * @deprecated use Array.prototype.slice instead
+ */
+Arr.sliceArray = Deprecated.deprecated("use Array.prototype.slice instead",
 function(array, index)
 {
     var slice = [];
@@ -188,14 +195,14 @@ function(array, index)
 });
 
 /**
- * @deprecated Use either Array.slice(array) or Array.map(array, fn) instead. 
- * see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array
- *
  * Clone an array. If a function is given as second parameter, the function is called for each
  * elements of the passed array and the results are put in the new one.
  *
- * @param array {Array or Array-Like object} the array
- * @param fn {Function} the function (optional)
+ * @param {Array or Array-Like object} [array] The array
+ * @param {function} [fn] The function
+ *
+ * @deprecated Use either Array.slice(array) or Array.map(array, fn) instead. 
+ * see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array
  *
  */
 Arr.cloneArray = Deprecated.deprecated("use either Array.slice or Array.map instead",
@@ -220,9 +227,9 @@ function(array, array2)
  * insert elements at a specific index
  * NOTE: that method modifies the array passed as the first parameter
  *
- * @param array {Array or Array-Like object} the array in which we insert elements
- * @param index {Integer} the index
- * @param other {Array or Array-Like object} the elements to insert
+ * @param {Array or Array-Like object} array The array in which we insert elements
+ * @param {Integer} index The index
+ * @param {Array or Array-Like object} other The elements to insert
  *
  * @return the updated array
  */
@@ -237,22 +244,22 @@ Arr.arrayInsert = function(array, index, other)
  * Filters out unique values of an array, saving only the first occurrence of
  * every value. In case the array is sorted, a faster path is taken.
  *
- * @param {Array or Array-Like object} ar the array
- * @param {Boolean} if set to true, use the faster path
+ * @param {Array or Array-Like object} arr The array
+ * @param {Boolean} sorted If set to true, use the faster path
  *
  * @return {Array} the array deprived of duplication
  */
-Arr.unique = function(ar, sorted)
+Arr.unique = function(arr, sorted)
 {
-    var ret = [], len = ar.length;
+    var ret = [], len = arr.length;
     if (sorted)
     {
         for (var i = 0; i < len; ++i)
         {
             // Skip duplicated entries
-            if (i && ar[i-1] === ar[i])
+            if (i && arr[i-1] === arr[i])
                 continue;
-            ret.push(ar[i]);
+            ret.push(arr[i]);
         }
     }
     else
@@ -262,10 +269,10 @@ Arr.unique = function(ar, sorted)
         var map = {};
         for (var i = 0; i < len; ++i)
         {
-            if (!map.hasOwnProperty("," + ar[i]))
+            if (!map.hasOwnProperty("," + arr[i]))
             {
-                ret.push(ar[i]);
-                map["," + ar[i]] = 1;
+                ret.push(arr[i]);
+                map["," + arr[i]] = 1;
             }
         }
     }
@@ -275,22 +282,22 @@ Arr.unique = function(ar, sorted)
 /**
  * Sorts an array and eliminate duplicates from it.
  *
- * @param {Array or Array-Like object} ar the array
- * @param {Function} sortFunc the function used to sort the array (optional)
+ * @param {Array or Array-Like object} arr The array
+ * @param {function} sortFunc The function used to sort the array (optional)
  *
  * @return {Array} the sorted array
  */
-Arr.sortUnique = function(ar, sortFunc)
+Arr.sortUnique = function(arr, sortFunc)
 {
     // make a clone of the array so the original one is preserved
-    var arCopy = ArrayGen.slice(ar);
-    return Arr.unique(arCopy.sort(sortFunc), true);
+    var arrCopy = ArrayGen.slice(arr);
+    return Arr.unique(arrCopy.sort(sortFunc), true);
 };
 
 /**
- * @deprecated use Arr.sortUnique and/or Array.prototype.concat instead
  * Merge together two arrays, sort the result, and eliminate any duplicates.
- * Deprecated.
+ *
+ * @deprecated use Arr.sortUnique and/or Array.prototype.concat instead
  */
 Arr.merge = Deprecated.deprecated("use Arr.sortUnique and/or Array.prototype.concat instead",
 function(arr1, arr2, sortFunc)

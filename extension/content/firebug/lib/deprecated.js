@@ -5,9 +5,6 @@ define([
 ],
 function(FBTrace) {
 "use strict";
-/**
- * @util Util to warn and manage deprecations
- */
 
 // ********************************************************************************************* //
 // Constants
@@ -22,15 +19,21 @@ var naggedCache = new WeakMap();
 // ********************************************************************************************* //
 // Module implementation
 
+/**
+ * @name Deprecated
+ * @lib Utility to warn and manage deprecations
+ */
 var Deprecated = {};
 
 /**
- * wraps a function to display a deprecation warning message
+ * Wraps a function to display a deprecation warning message
  * each time that function is called.
  *
- * @param {String} msg the message to display
- * @param {Function} fnc the function to wrap
- * @param {Array-like Object} args the arguments to pass to the wrapped function (optional)
+ * @param {string} msg The message to display
+ * @param {function} fnc The function to wrap
+ * @param {Array or Array-like Object} [args] The arguments to pass to the wrapped function
+ *
+ * @returns {function} The wrapped function
  */
 Deprecated.deprecated = function(msg, fnc, args)
 {
@@ -50,7 +53,7 @@ Deprecated.deprecated = function(msg, fnc, args)
 /**
  * displays a message for deprecation
  *
- * @param {String} msg the message to display
+ * @param {String} msg The message to display
  */
 Deprecated.log = function(msg)
 {
@@ -58,10 +61,13 @@ Deprecated.log = function(msg)
 }
 
 // xxxFlorent: might have to be improved. Don't hesitate to tell what you think about it
-// xxxFlorent: TODO add parameters in comments
 /**
- * marks a property as deprecated (and read-only)
+ * define and marks a property as deprecated. The defined property is read-only.
  *
+ * @param {object} obj The object for  which we define the new property
+ * @param {string} propName The name of the property
+ * @param {string} msg The deprecation message
+ * @param {*} value The value returned when accessing the property
  *
  */
 Deprecated.deprecatedROProp = function(obj, propName, msg, value)

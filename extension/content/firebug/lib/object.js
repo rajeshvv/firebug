@@ -9,17 +9,17 @@ define([
 function(FBTrace, Str, Deprecated, Func) {
 "use strict";
 // xxxFlorent: TODO add that specific tag in jsdoc...
-/**
- * @util Utility for objects
- */
 
 // ********************************************************************************************* //
 // Constants
 
 var Cu = Components.utils;
 
+/**
+ * @name Obj
+ * @lib Utility for objects
+ */
 var Obj = {};
-/** @lends Lib.Obj */
 
 // ********************************************************************************************* //
 
@@ -34,12 +34,12 @@ Obj.bindFixed = Deprecated.deprecated("Please, use Func.bindFixed instead now", 
 /**
  * Clones and extend the object (first parameters) with other objects (following parameters).
  *
- * For example:
- *      var parentObj = {foo: "foo" };
- *      var newObj = Obj.extend(parentObj, {bar: "bar"}); => {foo: "foo", bar: "bar"}
- *
- * @param {Object} parentObject the object to clone and extend
+ * @param {Object} parentObject The object to clone and extend
  * @param {Object} ...extensions the extensions
+ *
+ * @example
+ * var parentObj = {foo: "foo" };
+ * var newObj = Obj.extend(parentObj, {bar: "bar"}); // => {foo: "foo", bar: "bar"}
  */
 Obj.extend = function(parentObject/*, ...extensions*/)
 {
@@ -65,8 +65,8 @@ Obj.extend = function(parentObject/*, ...extensions*/)
  * Creates a new instance inheriting from a parent "class".
  * That class is then extended with child properties.
  *
- * @param {Object} protototypeParent the parent "class" prototype
- * @param {Object} childProperties the properties extending the new object
+ * @param {Object} protototypeParent The parent "class" prototype
+ * @param {Object} childProperties The properties extending the new object
  *
  * @return {Object} the new object
  */
@@ -166,13 +166,11 @@ Obj.hasProperties = function(ob, nonEnumProps, ownPropsOnly)
 };
 
 /**
- * @deprecated use <object>.prototype instead (+ clever checks before)
- *
  * Returns the prototype of an object, or null if the function fails to do so.
  *
- * 
+ * @deprecated use <code>myObj.prototype</code> instead (plus clever checks before)
  */
-Obj.getPrototype = Deprecated.deprecated("use <object>.prototype instead (+ clever checks before)",
+Obj.getPrototype = Deprecated.deprecated("use myObj.prototype instead (+ clever checks before)",
 function(ob)
 {
     try
@@ -195,8 +193,8 @@ Obj.getUniqueId = function()
 /**
  * Returns a random integer between min and max
  *
- * @param {Number} min the minimum
- * @param {Number} max the maximum
+ * @param {Number} min The minimum
+ * @param {Number} max The maximum
  *
  * @return {Number} the random number
  */
@@ -208,14 +206,14 @@ Obj.getRandomInt = function(min, max)
 // xxxFlorent: not sure it is true... But I couldn't find any case where `instanceof` 
 //             didn't work correctly cross-window
 /**
- * @deprecated use `instanceof` instead
- *
  * Cross Window instanceof
  *
- * @param {Object} obj the object to test
- * @param {?} type the type (local to this window)
+ * @param {Object} obj The object to test
+ * @param {*} type The type (local to this window)
  *
  * @returns {Boolean} true if the test succeeded, false otherwise
+ *
+ * @deprecated use <code>instanceof</code> instead
  */
 Obj.XW_instanceof = Deprecated.deprecated("use `instanceof` instead", function(obj, type)
 {
@@ -251,9 +249,9 @@ Obj.XW_instanceof = Deprecated.deprecated("use `instanceof` instead", function(o
  * isNonNativeGetter has been introduced in Firefox 7
  * The method has been moved to WebConsoleUtils.jsm in Fx 18
  *
- * @param object obj The object that contains the property.
- * @param string propName The property you want to check if it is a getter or not.
- * @return boolean True if the given property is a getter, false otherwise.
+ * @param {object} obj The object that contains the property.
+ * @param {string} propName The property you want to check if it is a getter or not.
+ * @return {boolean} True if the given property is a getter, false otherwise.
  */
 Obj.isNonNativeGetter = function(obj, propName)
 {

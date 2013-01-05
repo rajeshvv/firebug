@@ -10,9 +10,6 @@ define([
 ],
 function(FBTrace, Deprecated, Css, Arr, Xml, Wrapper) {
 "use strict";
-/**
- * @util Utility for Nodes
- */
 
 // ********************************************************************************************* //
 // Constants
@@ -20,8 +17,12 @@ function(FBTrace, Deprecated, Css, Arr, Xml, Wrapper) {
 var Ci = Components.interfaces;
 var Cc = Components.classes;
 
+/**
+ * @name Dom
+ * @lib Utility for Nodes
+ */
 var Dom = {};
-/** @lends Dom */
+
 var domMemberCache = null;
 var domMemberMap = {};
 var domMappedData = new WeakMap();
@@ -41,7 +42,7 @@ Dom.domUtils = Cc["@mozilla.org/inspector/dom-utils;1"].getService(Ci.inIDOMUtil
  * Selects the first child element which matches with the first classname,
  * then the first child of it which matches with the second classname, and so on...
  *
- * @param {Element} elt the initial parent element
+ * @param {Element} elt The initial parent element
  * @param {String} ...classnames the classnames
  *
  * @return {Element} the element matching with the last classname or null
@@ -74,8 +75,8 @@ Dom.getChildByClass = function(elt/*, ...classnames*/)
 
 /**
  * Gets the ancestor of a node with a specific class name
- * @param node {Node} Child node, for which to search the ancestor
- * @param className {String} Class name of ancestor node
+ * @param {Node} node Child node, for which to search the ancestor
+ * @param {String} className Class name of ancestor node
  * @returns {Node} Ancestor node
  */
 Dom.getAncestorByClass = function(node, className)
@@ -91,8 +92,8 @@ Dom.getAncestorByClass = function(node, className)
 
 /**
  * Gets the ancestor of a node with a specific tag name
- * @param node {Node} Child node, for which to search the ancestor
- * @param tagName {String} Tag name of the ancestor node
+ * @param {Node} node Child node, for which to search the ancestor
+ * @param {String} tagName Tag name of the ancestor node
  * @returns {Node} Ancestor node
  */
 Dom.getAncestorByTagName = function(node, tagName)
@@ -150,8 +151,8 @@ function(node, attrName, attrValue)
 
 /**
  * Checks whether a node is an ancestor of another node
- * @param node {Node} Child node, for which to check the ancestor
- * @param potentialAncestor {Node} Node to check
+ * @param {Node} node Child node, for which to check the ancestor
+ * @param {Node} potentialAncestor Node to check
  * @returns {Boolean} True if 'potentialAncestor' is an ancestor of 'node', otherwise false
  */
 Dom.isAncestor = function(node, potentialAncestor)
@@ -167,7 +168,7 @@ Dom.isAncestor = function(node, potentialAncestor)
 
 /**
  * Gets the next element node
- * @param node {Node} Node, for which to get the next element node
+ * @param {Node} node Node, for which to get the next element node
  * @returns {Node} Next element node
  */
 Dom.getNextElement = function(node)
@@ -180,7 +181,7 @@ Dom.getNextElement = function(node)
 
 /**
  * Gets the previous element node
- * @param node {Node} Node, for which to get the previous element node
+ * @param {Node} node Node, for which to get the previous element node
  * @returns {Node} Previous element node
  */
 Dom.getPreviousElement = function(node)
@@ -193,7 +194,7 @@ Dom.getPreviousElement = function(node)
 
 /**
  * Gets the body element of an HTML document or the document element for non-HTML documents
- * @param doc {Document} Document, for which to get the body element or document element
+ * @param {Document} doc Document, for which to get the body element or document element
  * @returns {Node} Body element or document element
  */
 Dom.getBody = function(doc)
@@ -214,8 +215,8 @@ Dom.getBody = function(doc)
 /**
  * Insert the new node after the reference node.
  *
- * @param {Node} newNode the node to insert
- * @param {Node} referenceNode the node after which we insert the new node
+ * @param {Node} newNode The node to insert
+ * @param {Node} referenceNode The node after which we insert the new node
  *
  * @return {Node} the new node if the insertion succeeded
  */
@@ -233,9 +234,9 @@ Dom.insertAfter = function(newNode, referenceNode)
 /**
  * Insert a script element in the document
  *
- * @param doc {DocumentElement} the document
- * @param id {String} the id of the script to insert
- * @param content {String} the content of the script (evaluated once the script is inserted)
+ * @param {DocumentElement} doc The document
+ * @param {String} id The id of the script to insert
+ * @param {String} content The content of the script (evaluated once the script is inserted)
  *
  * @return {Element} the inserted script
  */
@@ -266,9 +267,9 @@ Dom.addScript = function(doc, id, src)
 }
 
 /**
- * @deprecated since Firefox 20, we can use outerHTML instead, even for non-HTML elements
- *
  * Set the outerHTML of kind of element
+ *
+ * @deprecated since Firefox 20, we can use outerHTML instead, even for non-HTML elements
  */
 Dom.setOuterHTML = Deprecated.deprecated("Since Firefox 20, use outerHTML instead, "+
 "even with non-HTML elements", function(element, html)
@@ -291,8 +292,8 @@ Dom.setOuterHTML = Deprecated.deprecated("Since Firefox 20, use outerHTML instea
 /**
  * Converts a chunk of HTML code into DOM elements (stored in a document fragment)
  *
- * @param {String} markup the HTML code
- * @param {Element} the reference element (often the element which will receive the fragment)
+ * @param {String} markup The HTML code
+ * @param {Element} the Reference element (often the element which will receive the fragment)
  *
  * @return {DocumentFragment} the document fragment having the generated elements
  */
@@ -374,11 +375,12 @@ Dom.isCollapsed = function(elt)
 };
 
 /**
- * @deprecated set elt.style.visibility instead
  * Hide or display an element
  *
- * @param {Element} elt the element
- * @param {Boolean} hidden if set to true, hide the element, otherwise display it
+ * @param {Element} elt The element
+ * @param {Boolean} hidden If set to true, hide the element, otherwise display it
+ *
+ * @deprecated set elt.style.visibility instead
  */
 Dom.hide = Deprecated.deprecated("set elt.style.visibility instead", function(elt, hidden)
 {
@@ -386,10 +388,11 @@ Dom.hide = Deprecated.deprecated("set elt.style.visibility instead", function(el
 });
 
 /**
- * @deprecated use the following instead: `node.textContent = "";`
  * Clears a node
  *
- * @param {Node} node the node to clear
+ * @param {Node} node The node to clear
+ *
+ * @deprecated use the following instead: <code>node.textContent = "";</code>
  */
 Dom.clearNode = Deprecated.deprecated("use the following instead: `node.textContent = \"\";`",
 function(node)
@@ -400,7 +403,7 @@ function(node)
 /**
  * Erases a node
  *
- * @param {Node} the node to erase
+ * @param {Node} the Node to erase
  */
 Dom.eraseNode = function(node)
 {
@@ -413,7 +416,7 @@ Dom.eraseNode = function(node)
 /**
  * Returns true if the passed object is a node
  *
- * @param {Object} obj the object to test
+ * @param {Object} obj The object to test
  *
  * @return {Boolean} true if the passed object is a node, false otherwise
  */
@@ -941,10 +944,10 @@ function getNodeData(element)
 /**
  * Returns stored data about a node.
  *
- * @param {Node} node the node
- * @param {?} key the key
+ * @param {Node} node The node
+ * @param {*} key The key
  *
- * @return {?} the data
+ * @return {*} the data
  */
 Dom.getMappedData = function(node, key)
 {
@@ -955,9 +958,9 @@ Dom.getMappedData = function(node, key)
 /**
  * Stores a data about the given node.
  *
- * @param {Node} node the node
- * @param {?} key the key
- * @param {?} value the data to store
+ * @param {Node} node The node
+ * @param {*} key The key
+ * @param {*} value The data to store
  *
  */
 Dom.setMappedData = function(node, key, value)
@@ -975,8 +978,8 @@ Dom.setMappedData = function(node, key, value)
 /**
  * Deletes the data about the given node.
  *
- * @param {Node} node the node
- * @param {?} key the key
+ * @param {Node} node The node
+ * @param {*} key The key
  *
  */
 Dom.deleteMappedData = function(node, key)

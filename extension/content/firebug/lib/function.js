@@ -5,29 +5,29 @@ define([
 ],
 function(FBTrace) {
 "use strict";
-/**
- * @util Utility for Functions
- */
 
 // ********************************************************************************************* //
 // Constants
 
+/**
+ * @name Func
+ * @lib Utility for Functions
+ */
 var Func = {};
-/** @lends Func */
 
 // ********************************************************************************************* //
 
 
 /**
- * Creates a new function that, when called, uses the provided `this` value and appends the provided
- * arguments. Note that it differs from Function.prototype.bind which prepends the provided 
- * arguments (that is why this function is called bindRight).
+ * Creates a new function that, when called, uses the provided <code>this</code> value 
+ * and appends the provided arguments. Note that it differs from Function.prototype.bind which 
+ * prepends the provided arguments (that is why this function is called bindRight).
  *
- * @param {Function} fn the function to bind
- * @param {?} thisObject the object to pass as the `this` value
- * @param {?} ...args the series of parameters to pass to the new function
+ * @param {function} fn The function to bind
+ * @param {*} thisObject The object to pass as the <code>this</code> value
+ * @param {*} ...args the series of parameters to pass to the new function
  *
- * @return {Function} the new function
+ * @return {function} the new function
  */
 Func.bindRight = function(fn, thisObject/*, ...origArgs*/)
 {
@@ -41,14 +41,15 @@ Func.bindRight = function(fn, thisObject/*, ...origArgs*/)
 
 // xxxFlorent: TODO: [REST]
 /**
- * Creates a new function that, when called, uses the provided `this` value and arguments.
- * At the contrary of `Function.prototype.bind`, any parameter provided at the call is ignored.
+ * Creates a new function that, when called, uses the provided <code>this</code> value and arguments.
+ * At the contrary of <code>Function.prototype.bind</code>, any parameter provided at the call is
+ * ignored.
  *
- * @param {Function} fn the function to bind
- * @param {?} thisObject the object to pass as the `this` value
- * @param {?} ...args the series of parameters to pass to the new function
+ * @param {function} fn The function to bind
+ * @param {*} thisObject The object to pass as the `this` value
+ * @param {*} ...args the series of parameters to pass to the new function
  *
- * @return {Function} the new Function
+ * @return {function} the new Function
  */
 Func.bindFixed = function(fn, thisObject/*, ...args*/)
 {

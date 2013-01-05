@@ -62,11 +62,6 @@ libs.forEach(function(lib)
 
 Deprecated.deprecatedROProp(FBL, "SourceLink", deprecationMessage, SourceLink.SourceLink);
 
-//FBL.ErrorCopy = FirebugReps.ErrorCopy;
-//FBL.ErrorMessageObj = FirebugReps.ErrorMessageObj;
-//FBL.EventCopy = Dom.EventCopy;
-//FBL.PropertyObj = FirebugReps.PropertyObj;
-
 // deprecated
 FBL.$ = Deprecated.deprecated("Use document.getElementById(id) instead", function(id, doc)
 {

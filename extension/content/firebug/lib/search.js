@@ -24,7 +24,7 @@ var finder = Search.finder = Cc["@mozilla.org/embedcomp/rangefind;1"].createInst
  *
  * @constructor
  * @param {Node} rootNode Node to search
- * @param {Function} rowFinder results filter. On find this method will be called
+ * @param {function} rowFinder Results filter. On find this method will be called
  *      with the node containing the matched text as the first parameter. This may
  *      be undefined to return the node as is.
  */
@@ -37,8 +37,8 @@ Search.TextSearch = function(rootNode, rowFinder)
      * Find the first result in the node.
      *
      * @param {String} text Text to search for
-     * @param {boolean} reverse true to perform a reverse search
-     * @param {boolean} caseSensitive true to perform a case sensitive search
+     * @param {boolean} reverse True to perform a reverse search
+     * @param {boolean} caseSensitive True to perform a case sensitive search
      */
     this.find = function(text, reverse, caseSensitive)
     {
@@ -59,10 +59,10 @@ Search.TextSearch = function(rootNode, rowFinder)
     /**
      * Find the next search result
      *
-     * @param {boolean} wrapAround true to wrap the search if the end of range is reached
-     * @param {boolean} sameNode true to return multiple results from the same text node
-     * @param {boolean} reverse true to search in reverse
-     * @param {boolean} caseSensitive true to perform a case sensitive search
+     * @param {boolean} wrapAround True to wrap the search if the end of range is reached
+     * @param {boolean} sameNode True to return multiple results from the same text node
+     * @param {boolean} reverse True to search in reverse
+     * @param {boolean} caseSensitive True to perform a case sensitive search
      */
     this.findNext = function(wrapAround, sameNode, reverse, caseSensitive)
     {
