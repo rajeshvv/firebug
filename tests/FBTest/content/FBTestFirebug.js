@@ -47,11 +47,11 @@ this.ok = function(pass, msg)
  * Verification method. Compares expected and actual string (typically from the Firebug UI).
  * If "actual" and "expected" parameters are equal, the test passes, otherwise it fails.
  *  
- * @param {String} expected Expected value
- * @param {String} actual Actual value
+ * @param {*} expected Expected value
+ * @param {*} actual Actual value
  * @param {String} msg A message to be displayed as a test result under the current test
  *      within the test console.
- * @param {String} shouldNotMatch Specifies whether expected and actual should not match
+ * @param {Boolean} [shouldNotMatch] Specifies whether expected and actual should not match
  */
 this.compare = function(expected, actual, msg, shouldNotMatch)
 {
