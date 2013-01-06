@@ -266,6 +266,7 @@ Arr.unique = function(arr, sorted)
     {
         // Keep a map whose ","-prefixed keys represent the values that have
         // occurred so far in the array (this avoids overwriting e.g. __proto__).
+        // xxxFlorent: [ES6-SET]
         var map = {};
         for (var i = 0; i < len; ++i)
         {

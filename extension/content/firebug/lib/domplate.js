@@ -252,14 +252,15 @@ DomplateTag.prototype =
                 iter = new ArrayIterator(iter);
 
             var value;
+            var cont = true;
             try
             {
-                while (1)
+                while (cont !== false)
                 {
                     value = iter.next();
                     var itemOuts = [0,0];
                     iterOuts.push(itemOuts);
-                    fn.apply(this, [value, itemOuts]);
+                    cont = fn.apply(this, [value, itemOuts]);
                 }
             }
             catch (exc)
@@ -1035,6 +1036,13 @@ function ArrayIterator(array)
 }
 
 function StopIteration() {}
+
+Domplate.$break = function()
+{
+    throw StopIteration;
+};
+
+FBL.$break = Deprecated.deprecated("Use Domplate.$break instead.", Domplate.$break);
 
 // ********************************************************************************************* //
 

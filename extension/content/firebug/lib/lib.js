@@ -71,15 +71,6 @@ FBL.$ = Deprecated.deprecated("Use document.getElementById(id) instead", functio
         return document.getElementById(id);
 });
 
-// xxxFlorent: it appears likely that this $break function is not used anywhere...
-//             StopIteration was private to domplate.js
-function StopIteration() {}
-
-FBL.$break = Deprecated.deprecated("Use the break statement instead", function()
-{
-    throw StopIteration;
-});
-
 // deprecated
 var jsd = Components.classes["@mozilla.org/js/jsd/debugger-service;1"].
     getService(Components.interfaces.jsdIDebuggerService);

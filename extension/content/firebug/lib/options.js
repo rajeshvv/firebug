@@ -96,6 +96,7 @@ var prefDomain = "extensions.firebug";
 // ********************************************************************************************* //
 
 /**
+ * @name Options
  * @lib Util to manage firefox preferences <br/>
  *
  * Panels send commands to request option change.
