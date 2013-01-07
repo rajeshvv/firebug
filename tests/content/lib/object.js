@@ -7,31 +7,23 @@ function runTest() {
     FBTest.progress("== Testing Obj.bind + Obj.bindFixed ==");
     (function()
     {
-        var getGenMessage = function(funcName, expected, actual)
-        {
-            return "["+funcName+"] "+actual+" === "+expected;
-        };
         var thisObject = {};
         Obj.bind(function(_1, _2, _3, _4)
         {
-            var getMessage = getGenMessage.bind(null, "Obj.bind");
 
-            FBTest.compare(thisObject, this, getMessage("thisObject", "this"));
-            FBTest.compare(1, _1, getMessage("1", "_1"));
-            FBTest.compare(2, _2, getMessage("2", "_2"));
-            FBTest.compare(3, _3, getMessage("3", "_3"));
-            FBTest.compare(4, _4, getMessage("4", "_4"));
-            FBTest.compare(4, arguments.length, getMessage("4", "arguments.length"));
+            FBTest.compare(thisObject, this, "[Obj.bind] thisObject is bound to the function "+
+                "(this === thisObject)");
+            var sArgs = Array.slice(arguments).toString();
+            FBTest.compare("1,2,3,4", sArgs, "[Obj.bind] the arguments list should be: 1,2,3,4");
         }, thisObject, 3, 4).call({}, 1, 2);
 
         Obj.bindFixed(function(_1, _2)
         {
-            var getMessage = getGenMessage.bind(null, "Obj.bindFixed");
-
-            FBTest.compare(thisObject, this, getMessage("thisObject", "this"));
-            FBTest.compare(1, _1, getMessage("1", "_1"));
-            FBTest.compare(2, _2, getMessage("2", "_2"));
-            FBTest.compare(2, arguments.length, getMessage("2", "arguments.length"));
+            FBTest.compare(thisObject, this, "[Obj.bindFixed] thisObject is bound to the function "+
+                "(this === thisObject)");
+            var sArgs = Array.slice(arguments).toString();
+            FBTest.compare("1,2", sArgs, "[Obj.bindFixed] the arguments list should be: 1,2"+
+                " (the other arguments are ignored)");
         }, thisObject, 1, 2).call({}, 3, 4);
     })();
 
@@ -39,12 +31,25 @@ function runTest() {
     FBTest.progress("== Testing Obj.extend ==");
     (function()
     {
+        var value = 0;
         // initialization:
         var parentObj = {prop1: {}, overridenProp: {}};
-        var extension = {overridenProp: {}, prop2: {}, overridenProp2: {}};
-        var extension2 = {prop3: {}, overridenProp2: function(){}};
+        var extension = {
+            overridenProp: {},
+            prop2: {}, 
+            overridenProp2: {},
+            set setter(_value){ value = _value; }
+        };
+
+        var extension2 = {
+            prop3: {},
+            overridenProp2: function(){},
+            get getter(){ return value;}
+        };
+
         // call the function to test:
         var obj2test = Obj.extend(parentObj, extension, extension2);
+        Object.defineProperty(extension2, "hidden", { value: 42, enumerable: false});
         // compare:
         FBTest.compare(parentObj.prop1, obj2test.prop1, 
             "[Obj.extend] parentObj.prop1 === obj2test.prop1");
@@ -58,6 +63,12 @@ function runTest() {
             "[Obj.extend] extension2.prop3 === obj2test.prop3");
         FBTest.compare(extension2.overridenProp2, obj2test.overridenProp2,
             "[Obj.extend] extension2.overridenProp2 === obj2test.overridenProp2");
+
+        obj2test.setter = "ok";
+        FBTest.compare("ok", obj2test.getter, "[Obj.extend] also preserves the getters/setters");
+
+        FBTest.compare(undefined, obj2test.hidden, 
+            "[Obj.extend] extension2.hidden is not passed to obj2test");
     })();
 
     // ****************************************************************************************** //
@@ -71,8 +82,8 @@ function runTest() {
         // call the function to test:
         var obj2test = Obj.descend(parentClass.prototype, childPropertyOne, childPropertyTwo);
         //compare: 
-        FBTest.compare(parentClass.prototype.pop, obj2test.pop,
-            "[Obj.descend] parentClass.prototype.pop === obj2test.pop");
+        FBTest.compare(parentClass.prototype, Object.getPrototypeOf(obj2test),
+            "[Obj.descend] parentClass.prototype === Object.getPrototypeOf(obj2test.pop)");
 
         FBTest.compare(childPropertyOne.slice, obj2test.slice, 
             "[Obj.descend] childPropertyOne.slice === obj2test.slice");
