@@ -198,7 +198,7 @@ function(array, index)
  * Clone an array. If a function is given as second parameter, the function is called for each
  * elements of the passed array and the results are put in the new one.
  *
- * @param {Array or Array-Like object} [array] The array
+ * @param {Array or Array-Like object} array The array
  * @param {function} [fn] The function
  *
  * @deprecated Use either Array.slice(array) or Array.map(array, fn) instead. 

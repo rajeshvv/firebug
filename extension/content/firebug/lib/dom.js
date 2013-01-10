@@ -73,6 +73,7 @@ Dom.getChildByClass = function(elt/*, ...classnames*/)
     return elt;
 };
 
+// xxxFlorent: [CSS_SELECTORS_4-`!`][SELECTOR_API2-FIND]
 /**
  * Gets the ancestor of a node with a specific class name
  * @param {Node} node Child node, for which to search the ancestor
@@ -90,6 +91,7 @@ Dom.getAncestorByClass = function(node, className)
     return null;
 };
 
+// xxxFlorent: [CSS_SELECTORS_4-`!`][SELECTOR_API2-FIND]
 /**
  * Gets the ancestor of a node with a specific tag name
  * @param {Node} node Child node, for which to search the ancestor
@@ -149,6 +151,7 @@ function(node, attrName, attrValue)
     return result;
 });
 
+// xxxFlorent: [SELECTOR_API2-MATCHES]
 /**
  * Checks whether a node is an ancestor of another node
  * @param {Node} node Child node, for which to check the ancestor
@@ -170,27 +173,34 @@ Dom.isAncestor = function(node, potentialAncestor)
  * Gets the next element node
  * @param {Node} node Node, for which to get the next element node
  * @returns {Node} Next element node
+ *
+ * @deprecated use node.nextElementSibling instead
  */
-Dom.getNextElement = function(node)
+// xxxFlorent: TODO: see the usages
+Dom.getNextElement = Deprecated.deprecated("use node.nextElementSibling instead", function(node)
 {
     while (node && node.nodeType != Node.ELEMENT_NODE)
         node = node.nextSibling;
 
     return node;
-};
+});
 
 /**
  * Gets the previous element node
  * @param {Node} node Node, for which to get the previous element node
  * @returns {Node} Previous element node
+ *
+ * @deprecated use node.previousElementSibling instead
  */
-Dom.getPreviousElement = function(node)
+// xxxFlorent: TODO: see the usages
+Dom.getPreviousElement = Deprecated.deprecated("use node.previousElementSibling instead", 
+function(node)
 {
     while (node && node.nodeType != Node.ELEMENT_NODE)
         node = node.previousSibling;
 
     return node;
-};
+});
 
 /**
  * Gets the body element of an HTML document or the document element for non-HTML documents
@@ -219,17 +229,16 @@ Dom.getBody = function(doc)
  * @param {Node} referenceNode The node after which we insert the new node
  *
  * @return {Node} the new node if the insertion succeeded
+ *
+ * @deprecated use insertBefore(node, referenceNode.nextSibling) instead
  */
-Dom.insertAfter = function(newNode, referenceNode)
+Dom.insertAfter = Deprecated.deprecated("use insertBefore(node, referenceNode.nextSibling) instead",
+function(newNode, referenceNode)
 {
-    if (!referenceNode.parentNode)
-        return;
-
-    if (referenceNode.nextSibling)
-        return referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
-    else
-        return referenceNode.parentNode.appendChild(newNode);
-}
+    // xxxFlorent: insertBefore appends a child when the second parameter is null
+    if (referenceNode.parentNode)
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+});
 
 /**
  * Insert a script element in the document
@@ -301,29 +310,34 @@ Dom.markupToDocFragment = function(markup, referenceElement)
 {
     var doc = referenceElement.ownerDocument;
     var range = doc.createRange();
-    range.selectNode(referenceElement || doc.documentElement);
+    range.selectNode(referenceElement);
 
     return range.createContextualFragment(markup);
 };
 
+/**
+ * Converts markups to DOM elements and insert the latters before the reference element.
+ * If no reference element is provided, the generated elements are appended.
+ *
+ * @param {Element} element The parent element
+ * @param {string} html The string with markups
+ * @param {Node} referenceElement The reference element
+ *
+ * @return {Node} the first generated element
+ *
+ * @deprecated Since Firefox 20, use <code>element.insertAdjacentHTML("beforeEnd", html)</code> or
+ *  <code>referenceElement.insertAdjacentHTML("afterEnd", html)</code> instead,
+ *  even with non-HTML elements (XML, SVG, etc.)
+ */
 Dom.appendInnerHTML = Deprecated.deprecated("Since Firefox 20, use "+
-"insertAdjacentHTML(\"beforeEnd\", html) instead, even with non-HTML elements",
+"element.insertAdjacentHTML(\"beforeEnd\", html) or "+
+"referenceElement.insertAdjacentHTML(\"afterEnd\", html) instead, even with non-HTML elements",
 function(element, html, referenceElement)
 {
     var firstGeneratedChild = null;
-    // using insertAdjacentHTML is safer for HTML elements:
-    if (element instanceof HTMLElement)
-    {
-        var lastChild = element.lastChild;
-        element.insertAdjacentHTML("beforeEnd", html);
-        firstGeneratedChild = (lastChild ? lastChild.nextSibling : element.firstChild);
-    }
-    else
-    {
-        var fragment = Dom.markupToDocFragment(html, referenceElement);
-        firstGeneratedChild = fragment.firstChild;
-        element.insertBefore(fragment, referenceElement);
-    }
+    var fragment = Dom.markupToDocFragment(html, referenceElement);
+    firstGeneratedChild = fragment.firstChild;
+    element.insertBefore(fragment, referenceElement);
     return firstGeneratedChild;
 });
 
@@ -351,10 +365,10 @@ Dom.insertTextIntoElement = function(element, text)
 // ********************************************************************************************* //
 
 /**
- * @deprecated
- * xxxFlorent: hide XUL elements?? (TODO)
+ * @deprecated use <code>elt.style.visibility = "collapse"</code> instead
  */
-Dom.collapse = function(elt, collapsed)
+Dom.collapse = Deprecated.deprecated("use elt.style.visibility = \"collapse\" instead", 
+function(elt, collapsed)
 {
     if (!elt)
     {
@@ -363,11 +377,10 @@ Dom.collapse = function(elt, collapsed)
     }
 
     elt.setAttribute("collapsed", collapsed ? "true" : "false");
-};
+});
 
 /**
  * @deprecated
- * TODO
  */
 Dom.isCollapsed = function(elt)
 {

@@ -1042,7 +1042,6 @@ Domplate.$break = function()
     throw StopIteration;
 };
 
-FBL.$break = Deprecated.deprecated("Use Domplate.$break instead.", Domplate.$break);
 
 // ********************************************************************************************* //
 
