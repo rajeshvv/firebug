@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <title>Testing lib/dom.js</title>
+    </head>
+    <body>
+        <section id="getChildByClass">
+            <div class="child1">
+                <div class="child2">
+                    <div class="child3"></div>
+                </div>
+            </div>
+            <div class="child2 direct"></div>
+        </section>
+
+        <section id="getAncestorByClass">
+            <div class="parent1">
+                <article class="parent2">
+                    <div>
+                        <span class="child"></span>
+                    </div>
+                    text
+                </article>
+            </div>
+        </section>
+
+        <section id="getElementsByClass">
+            <div class="alpha"></div>
+            <div class="beta"></div>
+            <div class="alpha"></div>
+            <div class="beta"></div>
+            <div class="alpha beta"></div>
+        </section>
+
+        <section id="getElementsByAttribute">
+            <div data-test="ok">
+            </div>
+            text
+            <div data-test="ok">
+            </div>
+        </section>
+
+        <section id="markupToDocFragment">
+        </section>
+
+        <section id="appendInnerHTML">
+            <!-- we deletes all spaces between nodes so there is no "white" textnode -->
+            <div class="html"><p class="elementChild"></p>text</div>
+            <iframe class="xml">
+                <?xml version="1.0" encoding="UTF-8"?>
+                <root><refNode />text</root>
+            </iframe>
+        </section>
+
+    </body>
+</html>
