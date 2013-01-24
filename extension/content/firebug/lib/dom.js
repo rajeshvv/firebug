@@ -136,8 +136,13 @@ function(node, attrName, attrValue)
 {
     function iteratorHelper(node, attrName, attrValue, result)
     {
-        for (var child = node.firstElementChild; child; child = child.nextElementSibling)
+        // xxxFlorent: sadly, Documents and DocumentFragments do not have firstElementChild
+        // properties currently.
+        for (var child = node.firstChild; child; child = child.nextSibling)
         {
+            if (child.nodeType !== document.ELEMENT_NODE)
+                continue;
+
             if (child.getAttribute(attrName) == attrValue)
                 result.push(child);
 
