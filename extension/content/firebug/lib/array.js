@@ -230,13 +230,23 @@ function(array, fn)
 });
 
 /**
- * @deprecated Use Array.concat(array, array2) or array.concat(array2) instead
+ * concats two Arrays or Array-like objects
+ *
+ * @param {Array or Array-Like Object} array
+ * @param {Array or Array-Like Object} array2
+ *
+ * @return {Array} a new array with the elements of the two passed arrays
  */
-Arr.extendArray = Deprecated.deprecated("use Array.prototype.concat or Array.concat instead",
-function(array, array2)
+Arr.extendArray = function(array, array2)
 {
-   return array.concat(array2);
-});
+    if (Array.isArray(array) && Array.isArray(array2))
+        return array.concat(array2);
+
+    var newArray = [];
+    newArray.push.apply(newArray, array);
+    newArray.push.apply(newArray, array2);
+    return newArray;
+};
 
 /**
  * insert elements at a specific index
