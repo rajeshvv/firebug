@@ -158,6 +158,62 @@ function runTest() {
             FBTest.compare(html, docFrag.firstChild.outerHTML,
                 "[Dom.markupToDocFragment] should create a document fragment with html markups");
         })();
+        // ****************************************************************************************** //
+        FBTest.progress("== Testing Dom.isNode + Dom.isElement + Dom.isRange ==");
+
+        (function()
+        {
+            // Node:
+            FBTest.compare(true, Dom.isNode(document.body), "[Dom.isNode] test with an element");
+            FBTest.compare(true, Dom.isNode(document), "[Dom.isNode] test with a document node");
+            FBTest.compare(true, Dom.isNode(document.querySelector("[id]").attributes[0]),
+                "[Dom.isNode] test with an attribute node");
+            FBTest.compare(false, Dom.isNode({}), "[Dom.isNode] test with a simple object");
+            FBTest.compare(false, Dom.isNode(/*undefined*/), "[Dom.isNode] test with undefined");
+
+            // Element:
+            FBTest.compare(true, Dom.isElement(document.body), "[Dom.isElement] test with an element");
+            FBTest.compare(false, Dom.isElement(document), "[Dom.isElement] test with a document node");
+            FBTest.compare(false, Dom.isElement(document.querySelector("[id]").attributes[0]),
+                "[Dom.isElement] test with an attribute node");
+            FBTest.compare(false, Dom.isElement({}), "[Dom.isElement] test with a simple object");
+            FBTest.compare(false, Dom.isElement(/*undefined*/), "[Dom.isElement] test with undefined");
+
+            // Range:
+            FBTest.compare(true, Dom.isRange(document.createRange()), "[Dom.isRange] test with a range");
+            FBTest.compare(false, Dom.isRange({}), "[Dom.isRange] test with a simple object");
+            FBTest.compare(false, Dom.isRange(/*undefined*/), "[Dom.isRange] test with undefined");
+        })();
+
+        // ****************************************************************************************** //
+        FBTest.progress("== Testing Dom.hasChildElements ==");
+
+        (function()
+        {
+            var iframe = win.document.querySelector("#hasChildElements iframe");
+            var empty = document.querySelector(":empty");
+            var docFrag = Dom.markupToDocFragment("<div></div>", document.body);
+            var emptyDocFrag = Dom.markupToDocFragment("textNode", document.body);
+
+            FBTest.compare(true, Dom.hasChildElements(iframe),
+                "[Dom.hasChildElements] test with iframe");
+
+            FBTest.compare(true, Dom.hasChildElements(document.body),
+                "[Dom.hasChildElements] test with an element");
+
+            FBTest.compare(true, Dom.hasChildElements(document),
+                "[Dom.hasChildElements] test with document");
+
+            FBTest.compare(true, Dom.hasChildElements(docFrag),
+                "[Dom.hasChildElements] test with document fragment");
+
+            FBTest.compare(false, Dom.hasChildElements(emptyDocFrag),
+                "[Dom.hasChildElements] test with empty document fragment");
+
+            FBTest.compare(false, Dom.hasChildElements(emptyDocFrag.firstChild),
+                "[Dom.hasChildElements] test with a text node");
+        })();
+
 
         // ****************************************************************************************** //
         // asynchronous tests:
@@ -178,11 +234,17 @@ function runTest() {
             {
                 var div1 = Dom.appendInnerHTML(parent, "<div class='generated'></div>", ref);
 
-                var div2 = Dom.appendInnerHTML(parent, "<div class='generated'></div>");
+                var div2 = Dom.appendInnerHTML(parent, "<div class='generated'></div>"+
+                    "<div class='generated another'>text</div>");
 
-                FBTest.ok(deepEquals([div1, ref, textNode, div2], parent.childNodes),
+                var div3 = div2.nextSibling;
+
+                FBTest.ok(deepEquals([div1, ref, textNode, div2, div3], parent.childNodes),
                     "[Dom.appendInnerHTML] should generate the elements at the right positions "
                     +"("+mode+" version)");
+
+                FBTest.compare("generated another", div3.getAttribute("class"), 
+                    "[Dom.appendInnerHTML] checking the className of div3");
             }
             // test for the HTML version:
             test(html_parent, html_ref, html_textNode, "HTML");
