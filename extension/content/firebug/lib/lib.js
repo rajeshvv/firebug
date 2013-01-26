@@ -57,7 +57,12 @@ Deprecated ,Domplate];
 libs.forEach(function(lib)
 {
     for (var p in lib)
-        FBL[p] = Deprecated.deprecated(deprecationMessage, lib[p]);
+    {
+        if (typeof lib[p] === "function")
+            FBL[p] = Deprecated.deprecated(deprecationMessage, lib[p]);
+        else
+            Deprecated.deprecatedROProp(FBL, p, deprecationMessage, lib[p], true);
+    }
 });
 
 Deprecated.deprecatedROProp(FBL, "SourceLink", deprecationMessage, SourceLink.SourceLink);

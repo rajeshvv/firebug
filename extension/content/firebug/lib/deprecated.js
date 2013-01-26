@@ -68,12 +68,14 @@ Deprecated.log = function(msg)
  * @param {string} propName The name of the property
  * @param {string} msg The deprecation message
  * @param {*} value The value returned when accessing the property
+ * @param {boolean} [configurable] If set to true, the property is configurable
  *
  */
-Deprecated.deprecatedROProp = function(obj, propName, msg, value)
+Deprecated.deprecatedROProp = function(obj, propName, msg, value, configurable)
 {
     var descriptor = {
         get: Deprecated.deprecated(msg, function(){ return value; }),
+        configurable: configurable
     };
 
     Object.defineProperty(obj, propName, descriptor);
