@@ -160,19 +160,27 @@ function runTest() {
     (function()
     {
         var result, otherArr = [2,3], indInsert = 2;
+        // make a copy of arguments:
+        var args = Array.slice(arguments);
+
+        result = Arr.arrayInsert(args, indInsert, otherArr);
+
+        FBTest.compare("0,1,2,3,4,5,6", result, "[Arr.arrayInsert] the insertion of the other array"+
+            "content should work with Arrays");
+
+        var failWithArrayLike = false;
         try
         {
-            result = Arr.arrayInsert(arguments, indInsert, otherArr);
+            Arr.arrayInsert(arguments, 0, 1);
+            // wrong behaviour:
+            failWithArrayLike = false;
         }
-        catch (ex)
+        catch(ex)
         {
-            FBTest.ok(false, "[Arr.arrayInsert] should work with Array-like objects too"+
-                " (since version 1.12)");
-            var args = Array.slice(arguments);
-            result = Arr.arrayInsert(args, indInsert, otherArr);
+            // correct behaviour:
+            failWithArrayLike = true;
         }
-        FBTest.compare("0,1,2,3,4,5,6", result, "[Arr.arrayInsert] the insertion of the other array"+
-            "content should work");
+        FBTest.ok(failWithArrayLike, "[Arr.arrayInsert] should fail with Array-Like objects");
     })(0,1,4,5,6);
 
     // ****************************************************************************************** //
@@ -196,22 +204,22 @@ function runTest() {
         var sortFunc = function(cur, other){ return cur < other; };
         var arrSortUnique, arrMerge;
         var otherArray = [0,6,4,2,7,5];
+        var args = Array.slice(arguments);
 
         try
         {
             // Note: the function does not work with Array-like arguments with the old version
             arrSortUnique = Arr.sortUnique(arguments, sortFunc);
-            arrMerge = Arr.merge(arguments, otherArray, sortFunc);
         }
         catch(ex)
         {
             // raise a warning
             FBTest.ok(false, "[Arr.sortUnique] should work with Array-like arguments "+
                 "(working since version 1.12)");
-            var args = Array.slice(arguments);
             arrSortUnique = Arr.sortUnique(args, sortFunc);
-            arrMerge = Arr.merge(args, otherArray, sortFunc);
         }
+        // Arr.merge works only with Array objects
+        arrMerge = Arr.merge(args, otherArray, sortFunc);
 
         FBTest.compare("4,3,2,1,0", arrSortUnique,
             "[Arr.sortUnique] the result should be reverse-sorted");
