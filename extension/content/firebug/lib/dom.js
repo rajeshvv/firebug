@@ -433,35 +433,47 @@ Dom.eraseNode = function(node)
 // ********************************************************************************************* //
 
 /**
- * Returns true if the passed object is a node
+ * checks if an object is a node
  *
- * @param {Object} obj The object to test
+ * @param {*} o The object to test
  *
- * @return {Boolean} true if the passed object is a node, false otherwise
+ * @return {boolean} True if the object is a node
  */
-Dom.isNode = function(obj)
+Dom.isNode = Deprecated.deprecated("check with <code>o.nodeType</code> instead", function(o)
 {
-    try
-    {
-        return obj && obj instanceof window.Node;
+    try {
+        return o && o.nodeType;
     }
     catch (ex)
     {
-        // xxxFlorent: useful?
         return false;
     }
-};
-// xxxFlorent: I'm too lazy... I guess we should deprecate them
-Dom.isElement = function(o)
+});
+
+/**
+ * checks if an object is an element
+ *
+ * @param {*} o The object to test
+ *
+ * @return {boolean} True if the object is an element
+ */
+Dom.isElement = Deprecated.deprecated("check with <code>o.nodeType</code> instead", function(o)
 {
     try {
-        return o && o instanceof window.Element;
+        return o && o.nodeType === Node.ELEMENT_NODE;
     }
     catch (ex) {
         return false;
     }
-};
+});
 
+/**
+ * checks if an object is a range
+ *
+ * @param {*} o The object to test
+ *
+ * @return {boolean} True if the object is a range
+ */
 Dom.isRange = function(o)
 {
     try {
@@ -472,10 +484,20 @@ Dom.isRange = function(o)
     }
 };
 
+/**
+ * checks if a node has child elements
+ *
+ * @param {Node} node
+ *
+ * @return {boolean} True if the node as child elements
+ */
 Dom.hasChildElements = function(node)
 {
     if (node.contentDocument) // iframes
         return true;
+
+    if (node.nodeType === Node.ELEMENT_NODE)
+        return !!node.firstElementChild;
 
     for (var child = node.firstChild; child; child = child.nextSibling)
     {
