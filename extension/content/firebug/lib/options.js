@@ -29,7 +29,7 @@ const prefNames =  // XXXjjb TODO distribute to modules
     "commandEditor", "textWrapWidth", "framePosition", "showErrorCount",
     "activateSameOrigin", "allPagesActivation", "hiddenPanels",
     "panelTabMinWidth", "sourceLinkLabelWidth", "currentVersion",
-    "useDefaultLocale", "toolbarCustomizationDone", "addonBarOpened",
+    "useDefaultLocale", "toolbarCustomizationDone",
     "showBreakNotification", "stringCropLength", "showFirstRunPage",
 
     // Search
@@ -41,6 +41,7 @@ const prefNames =  // XXXjjb TODO distribute to modules
     "showChromeErrors", "showChromeMessages",
     "showXMLHttpRequests", "showNetworkErrors", "tabularLogMaxHeight",
     "consoleFilterTypes", "alwaysShowCommandLine",
+    "commandLineShowCompleterPopup",
 
     // HTML
     "showFullTextNodes", "showCommentNodes",
@@ -65,7 +66,7 @@ const prefNames =  // XXXjjb TODO distribute to modules
     // DOM
     "showUserProps", "showUserFuncs", "showDOMProps", "showDOMFuncs", "showDOMConstants",
     "ObjectShortIteratorMax", "showEnumerableProperties", "showOwnProperties",
-    "showInlineEventHandlers",
+    "showInlineEventHandlers", "showClosures",
 
     // Layout
     "showRulers",
@@ -257,7 +258,7 @@ var Options =
 
         var type = prefs.getPrefType(prefName);
 
-        var value;
+        var value = null;
         if (type == nsIPrefBranch.PREF_STRING)
             value = prefs.getCharPref(prefName);
         else if (type == nsIPrefBranch.PREF_INT)
@@ -321,20 +322,19 @@ var Options =
 
     getPreferenceTypeByExample: function(prefType)
     {
+        var type = nsIPrefBranch.PREF_INVALID;
         if (prefType)
         {
             if (prefType === typeof("s"))
-                var type = nsIPrefBranch.PREF_STRING;
+                type = nsIPrefBranch.PREF_STRING;
             else if (prefType === typeof(1))
-                var type = nsIPrefBranch.PREF_INT;
-            else if (prefType === typeof (true))
-                var type = nsIPrefBranch.PREF_BOOL;
-            else
-                var type = nsIPrefBranch.PREF_INVALID;
+                type = nsIPrefBranch.PREF_INT;
+            else if (prefType === typeof(true))
+                type = nsIPrefBranch.PREF_BOOL;
         }
         else
         {
-            var type = prefs.getPrefType(prefName);
+            type = prefs.getPrefType(prefName);
         }
 
         return type;

@@ -23,7 +23,6 @@ pref("extensions.firebug.showFirstRunPage", true);
 pref("extensions.firebug.useDefaultLocale", false);
 pref("extensions.firebug.activateSameOrigin", true);
 pref("extensions.firebug.toolbarCustomizationDone", false);
-pref("extensions.firebug.addonBarOpened", false);
 pref("extensions.firebug.showBreakNotification", true);
 pref("extensions.firebug.stringCropLength", 50);
 pref("extensions.firebug.hideDefaultInspector", false);
@@ -58,6 +57,7 @@ pref("extensions.firebug.console.enableSites", false);
 pref("extensions.firebug.tabularLogMaxHeight", 200);
 pref("extensions.firebug.consoleFilterTypes", "all");
 pref("extensions.firebug.preferJSDSourceLinks", false);
+pref("extensions.firebug.commandLineShowCompleterPopup", true);
 
 // HTML
 pref("extensions.firebug.showCommentNodes", false);
@@ -102,6 +102,7 @@ pref("extensions.firebug.showDOMProps", true);
 pref("extensions.firebug.showDOMFuncs", false);
 pref("extensions.firebug.showDOMConstants", false);
 pref("extensions.firebug.showInlineEventHandlers", false);
+pref("extensions.firebug.showClosures", false);
 pref("extensions.firebug.ObjectShortIteratorMax", 3);
 pref("extensions.firebug.showEnumerableProperties", true);
 pref("extensions.firebug.showOwnProperties", false);

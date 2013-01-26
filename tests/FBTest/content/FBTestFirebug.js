@@ -316,7 +316,10 @@ this.mouseMove = function(node, offsetX, offsetY)
 this.sendMouseEvent = function(event, target, win)
 {
     if (!target)
-        FBTrace.sysout("sendMouseEvent target is null");
+    {
+        FBTest.progress("sendMouseEvent target is null");
+        return;
+    }
 
     var targetIsString = typeof target == "string";
  
@@ -795,12 +798,12 @@ function waitForWindowLoad(browser, callback)
     // (bug549539) could be utilized.
     function waitForEvents(event)
     {
-        if (event.type == "load")
+        if (event.type == "load" && event.target === browser.contentDocument)
         {
             browser.removeEventListener("load", waitForEvents, true);
             loaded = true;
         }
-        else if (event.type == "MozAfterPaint")
+        else if (event.type == "MozAfterPaint" && event.target === browser.contentWindow)
         {
             browser.removeEventListener("MozAfterPaint", waitForEvents, true);
             painted = true;
@@ -990,7 +993,7 @@ this.disableConsolePanel = function(callback)
 };
 
 /**
- * Enables the Script panel and reloads if a callback is specified.
+ * Enables the Console panel and reloads if a callback is specified.
  * @param {Function} callback A handler that is called as soon as the page is reloaded.
  */
 this.enableConsolePanel = function(callback)
@@ -2353,15 +2356,17 @@ this.executeContextMenuCommand = function(target, menuItemIdentifier, callback)
             else if (menuItemIdentifier.label)
             {
                 var menuItemId = menuItemIdentifier.label;
-                var menuItems = contextMenu.children;
-                for each (menuItem in menuItems)
+                for (var item = contextMenu.firstChild; item; item = item.nextSibling)
                 {
-                    if (menuItem.label == menuItemId)
+                    if (item.label == menuItemId)
+                    {
+                        menuItem = item;
                         break;
+                    }
                 }
             }
 
-            self.ok(menuItem, "'" + menuItemId  + "' item must be available in the context menu.");
+            self.ok(menuItem, "'" + menuItemId + "' item must be available in the context menu.");
 
             // If the menu item isn't available close the context menu and bail out.
             if (!menuItem)

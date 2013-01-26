@@ -188,7 +188,7 @@ function createSimpleEscape(name, direction)
                     return list[ch];
                 }
             );
-    }
+    };
 }
 
 function escapeEntityAsName(char)
@@ -567,7 +567,7 @@ Str.hasPrefix = function(hay, needle)
 Str.endsWith = function(str, suffix)
 {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
-}
+};
 
 // ********************************************************************************************* //
 // HTML Wrap
@@ -792,15 +792,7 @@ Str.safeToString = function(ob)
     try
     {
         if (!ob)
-        {
-            if (ob == undefined)
-                return "undefined";
-            if (ob == null)
-                return "null";
-            if (ob == false)
-                return "false";
-            return "";
-        }
+            return ""+ob;
         if (ob && (typeof (ob["toString"]) == "function") )
             return ob.toString();
         if (ob && typeof (ob["toSource"]) == "function")

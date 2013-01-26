@@ -74,10 +74,12 @@ Firebug.Inspector = Obj.extend(Firebug.Module,
 
         if (!elementArr || !Arr.isArrayLike(elementArr))
         {
+            // Not everything that comes through here is wrapped - fix that.
+            elementArr = Wrapper.wrapObject(elementArr);
+
             // highlight a single element
             if (!elementArr || !Dom.isElement(elementArr) ||
-                (Wrapper.getContentView(elementArr) &&
-                    !Xml.isVisible(Wrapper.getContentView(elementArr))))
+                (typeof elementArr === "object" && !Xml.isVisible(elementArr)))
             {
                 if (elementArr && Dom.isRange(elementArr))
                     elementArr = elementArr;
@@ -146,7 +148,8 @@ Firebug.Inspector = Obj.extend(Firebug.Module,
             {
                 for (i=0, elementLen=elementArr.length; i<elementLen; i++)
                 {
-                    elt = elementArr[i];
+                    // Like above, wrap things.
+                    elt = Wrapper.wrapObject(elementArr[i]);
 
                     if (elt && elt instanceof HTMLElement)
                     {
@@ -788,11 +791,8 @@ Firebug.Inspector = Obj.extend(Firebug.Module,
             this.highlightObject(null);
             this.defaultHighlighter = value ? getHighlighter("boxModel") : getHighlighter("frame");
         }
-        else if (name == "showQuickInfoBox")
+        else if(name == "showQuickInfoBox")
         {
-            if (quickInfoBox.boxEnabled && !value)
-                quickInfoBox.hide();
-
             quickInfoBox.boxEnabled = value;
         }
     },
@@ -829,10 +829,23 @@ Firebug.Inspector = Obj.extend(Firebug.Module,
      */
     hideQuickInfoBox: function()
     {
-        quickInfoBox.hide();
+        var qiBox = Firebug.chrome.$("fbQuickInfoPanel");
+
+        if (qiBox.state==="open")
+            quickInfoBox.hide();
 
         this.inspectNode(null);
+    },
+
+    /**
+     * Pass all quick info box events to quickInfoBox.handleEvent() for handling.
+     * @param {Event} event Event to handle
+     */
+    quickInfoBoxHandler: function(event)
+    {
+        quickInfoBox.handleEvent(event);
     }
+
 });
 
 // ********************************************************************************************* //
@@ -1045,7 +1058,7 @@ function getImageMapHighlighter(context)
                 canvas = null;
                 ctx = null;
             }
-        }
+        };
     }
 
     return context.imageMapHighlighter;
@@ -1059,6 +1072,8 @@ var quickInfoBox =
     dragging: false,
     storedX: null,
     storedY: null,
+    prevX: null,
+    prevY: null,
 
     show: function(element)
     {
@@ -1120,16 +1135,76 @@ var quickInfoBox =
     hide: function()
     {
         // if mouse is over panel defer hiding to mouseout to not cause flickering
+        if (this.mouseover || this.dragging)
+        {
+            this.needsToHide = true;
+            return;
+        }
+
         var qiBox = Firebug.chrome.$("fbQuickInfoPanel");
-        if (qiBox.state==="closed")
-            return;
 
-        if (qiBox.mozMatchesSelector(":hover"))
-            return;
-
-        this.storedX = qiBox.boxObject.screenX;
-        this.storedY = qiBox.boxObject.screenY;
+        this.prevX = null;
+        this.prevY = null;
+        this.needsToHide = false;
         qiBox.hidePopup();
+    },
+
+    handleEvent: function(event)
+    {
+        switch (event.type)
+        {
+            case "mousemove":
+                if(!this.dragging)
+                    return;
+
+                var diffX, diffY,
+                    boxX = this.qiBox.screenX,
+                    boxY = this.qiBox.screenY,
+                    x = event.screenX,
+                    y = event.screenY;
+
+                diffX = x - this.prevX;
+                diffY = y - this.prevY;
+
+                this.qiBox.moveTo(boxX + diffX, boxY + diffY);
+
+                this.prevX = x;
+                this.prevY = y;
+                this.storedX = boxX;
+                this.storedY = boxY;
+                break;
+            case "mousedown":
+                this.qiPanel = Firebug.chrome.$("fbQuickInfoPanel");
+                this.qiBox = this.qiPanel.boxObject;
+                Events.addEventListener(this.qiPanel, "mousemove", this, true);
+                Events.addEventListener(this.qiPanel, "mouseup", this, true);
+                this.dragging = true;
+                this.prevX = event.screenX;
+                this.prevY = event.screenY;
+                break;
+            case "mouseup":
+                Events.removeEventListener(this.qiPanel, "mousemove", this, true);
+                Events.removeEventListener(this.qiPanel, "mouseup", this, true);
+                this.qiPanel = this.qiBox = null;
+                this.prevX = this.prevY = null;
+                this.dragging = false;
+                break;
+            // this is a hack to find when mouse enters and leaves panel
+            // it requires that #fbQuickInfoPanel have border
+            case "mouseover":
+                if(this.dragging)
+                    return;
+                this.mouseover = true;
+                break;
+            case "mouseout":
+                if(this.dragging)
+                    return;
+                this.mouseover = false;
+                // if hiding was defered because mouse was over panel hide it
+                if (this.needsToHide && event.target.nodeName == "panel")
+                    this.hide();
+                break;
+        }
     },
 
     addRows: function(domBase, vbox, attribs, computedStyle)
@@ -1463,7 +1538,7 @@ BoxModelHighlighter.prototype =
                 moveImp(nodes.lines.top, 0, top);
                 moveImp(nodes.lines.right, left + width, 0);
                 moveImp(nodes.lines.bottom, 0, top + height);
-                moveImp(nodes.lines.left, left, 0)
+                moveImp(nodes.lines.left, left, 0);
             }
 
             var body = getNonFrameBody(element);

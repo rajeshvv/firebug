@@ -13,8 +13,6 @@ var require, define;
 // Constants
 
 var Cu = Components.utils;
-var Cc = Components.classes;
-var Ci = Components.interfaces;
 
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://firebug/fbtrace.js");
@@ -98,7 +96,7 @@ var Loader =
         module = this.modules[moduleId] = {};
         module.scope = {
             define: this.lookup.bind(this)
-        }
+        };
 
         this.currentModule.push(module);
 
@@ -211,8 +209,8 @@ var Loader =
         for (var p in deps)
             desc += p + "\n";
         return desc;
-    },
-}
+    }
+};
 
 // ********************************************************************************************* //
 // Public API

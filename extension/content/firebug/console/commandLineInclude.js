@@ -124,14 +124,14 @@ var CommandLineIncludeRep = domplate(FirebugReps.Table,
         // NOTE: that piece of code has not been tested since deleting aliases through the table 
         // has been disabled.
         // Once it is enabled again, make sure FBTests is available for this feature
-        var store = CommandLine.getStore();
-        if (! Options.get(removeConfirmation))
+        var store = CommandLineInclude.getStore();
+        if (!Options.get(removeConfirmation))
         {
             var check = {value: false};
             var flags = prompts.BUTTON_POS_0 * prompts.BUTTON_TITLE_YES +
             prompts.BUTTON_POS_1 * prompts.BUTTON_TITLE_NO;
 
-            if  (prompts.confirmEx(context.chrome.window, Locale.$STR("Firebug"),
+            if (prompts.confirmEx(context.chrome.window, Locale.$STR("Firebug"),
                 Locale.$STR("commandline.include.confirmDelete"), flags, "", "", "",
                 Locale.$STR("Do_not_show_this_message_again"), check) > 0)
             {
@@ -187,7 +187,7 @@ var CommandLineIncludeRep = domplate(FirebugReps.Table,
                         editor.setText("// "+Locale.$STR("scratchpad.loading"));
                 }
             });
-        }
+        };
 
         var xhr = new XMLHttpRequest({mozAnon: true});
         xhr.open("GET", url, true);
@@ -203,7 +203,7 @@ var CommandLineIncludeRep = domplate(FirebugReps.Table,
             // otherwise, we wait for the editor
             if (editor)
                 editor.setText(scriptContent);
-        }
+        };
 
         xhr.onerror = function()
         {
@@ -211,7 +211,7 @@ var CommandLineIncludeRep = domplate(FirebugReps.Table,
                 return;
 
             spInstance.setText("// "+Locale.$STR("scratchpad.failLoading"));
-        }
+        };
 
         xhr.send(null);
     },
@@ -304,7 +304,7 @@ function CommandLineIncludeObject()
 
 // ********************************************************************************************* //
 
-var CommandLineInclude =
+var CommandLineInclude = Obj.extend(Firebug.Module,
 {
     onSuccess: function(newAlias, context, loadingMsgRow, xhr, hasWarnings)
     {
@@ -340,6 +340,14 @@ var CommandLineInclude =
     {
         if (!this.store)
             this.store = storageScope.StorageService.getStorage("includeAliases.json");
+
+        // let's log when the store could not be opened:
+        if (!this.store)
+        {
+            if (FBTrace.DBG_COMMANDLINE)
+                FBTrace.sysout("CommandLineInclude.getStore; can't open or create the store");
+        }
+
         return this.store;
     },
 
@@ -446,7 +454,7 @@ var CommandLineInclude =
             Firebug.CommandLine.evaluateInWebPage(codeToEval, context);
             if (successFunction)
                 successFunction(xhr, hasWarnings);
-        }
+        };
 
         if (errorFunction)
         {
@@ -478,8 +486,18 @@ var CommandLineInclude =
         xhr.send(null);
 
         // xxxFlorent: TODO show XHR progress
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  //
+    // Module events:
+
+    resetAllOptions: function()
+    {
+        var store = this.getStore();
+        if (store)
+            store.clear(true);
     }
-};
+});
 
 // ********************************************************************************************* //
 // Command Handler
@@ -562,6 +580,8 @@ Firebug.registerCommand("include", {
 });
 
 Firebug.registerRep(CommandLineIncludeRep);
+
+Firebug.registerModule(CommandLineInclude);
 
 return CommandLineInclude;
 
