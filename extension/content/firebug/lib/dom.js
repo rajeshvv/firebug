@@ -307,11 +307,12 @@ Dom.setOuterHTML = Deprecated.deprecated("Since Firefox 20, use outerHTML instea
  * Converts a chunk of HTML code into DOM elements (stored in a document fragment)
  *
  * @param {String} markup The HTML code
- * @param {Element} the Reference element (often the element which will receive the fragment)
+ * @param {Element} referenceNode The reference element (often the element which will receive the fragment)
+ * @param {boolean} [selectNodeContent] If set to true, use range.selectNodeContent(referenceElement) instead of range.selectNode(content)
  *
  * @return {DocumentFragment} the document fragment having the generated elements
  */
-Dom.markupToDocFragment = function(markup, referenceElement)
+Dom.markupToDocFragment = function(markup, referenceElement, selectNodeContent)
 {
     var doc = referenceElement.ownerDocument;
     var range = doc.createRange();
@@ -326,7 +327,7 @@ Dom.markupToDocFragment = function(markup, referenceElement)
  *
  * @param {Element} element The parent element
  * @param {string} html The string with markups
- * @param {Node} referenceElement The reference element
+ * @param {Node} [referenceElement] The reference element
  *
  * @return {Node} the first generated element
  *
@@ -340,7 +341,7 @@ Dom.appendInnerHTML = Deprecated.deprecated("Since Firefox 20, use "+
 function(element, html, referenceElement)
 {
     var firstGeneratedChild = null;
-    var fragment = Dom.markupToDocFragment(html, referenceElement);
+    var fragment = Dom.markupToDocFragment(html, element, true);
     firstGeneratedChild = fragment.firstChild;
     element.insertBefore(fragment, referenceElement);
     return firstGeneratedChild;
