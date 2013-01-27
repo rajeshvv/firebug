@@ -61,18 +61,14 @@ function runTest() {
             var parent = $id("getAncestorByClass");
             var [parent1, parent2, child] = parent.querySelectorAll(".parent1, .parent2, .child");
 
-            FBTest.progress("1");
             FBTest.compare(null, Dom.getAncestorByClass(child, null), "[Dom.getAncestorByClass] if no "+
                 "parent, the function should return null");
-            FBTest.progress("1");
 
             FBTest.compare(null, Dom.getAncestorByClass(child, "notfound"), "[Dom.getAncestorByClass] "+
                 "if the parent cannot be found, the function should return null");
-            FBTest.progress("1");
 
             FBTest.compare(parent1, Dom.getAncestorByClass(child, "parent1"), "[Dom.getAncestorByClass]"+
                 " should return the direct or the indirect parent matching the specified class name");
-            FBTest.progress("1");
 
             FBTest.compare(parent1, Dom.getAncestorByClass(parent2, "parent1"), "[Dom.getAncestorByClass]"+
                 " should return the direct or the indirect parent matching the specified class name (2)");
@@ -253,15 +249,23 @@ function runTest() {
             var iframe = parent.querySelector("iframe.xml");
             initXMLIFrame(iframe);
 
-            iframe.addEventListener("load", function()
+            function onIframeLoad()
             {
-                var xml_parent = iframe.contentDocument.querySelector("root");
-                var xml_ref = xml_parent.querySelector("refNode");
-                var xml_textNode = xml_ref.nextSibling;
-                test(xml_parent, xml_ref, xml_textNode, "XML");
-
+                try
+                {
+                    var xml_parent = iframe.contentDocument.querySelector("root");
+                    var xml_ref = xml_parent.querySelector("refNode");
+                    var xml_textNode = xml_ref.nextSibling;
+                    test(xml_parent, xml_ref, xml_textNode, "XML");
+                }
+                catch(ex)
+                {
+                    FBTest.exception("[Dom.appendInnerHTML] failed to run with XML", ex);
+                }
                 callback();
-            });
+            }
+
+            iframe.addEventListener("load", onIframeLoad);
 
         });
 

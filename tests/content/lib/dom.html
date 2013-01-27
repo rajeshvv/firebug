@@ -45,6 +45,8 @@
         <section id="appendInnerHTML">
             <!-- we deletes all spaces between nodes so there is no "white" textnode -->
             <div class="html"><p class="elementChild"></p>text</div>
+            <!-- The content of the iframe is put as innerHTML for prettier code display.
+                 Then the initXMLIFrame will do the necessary to render it correctly-->
             <iframe class="xml">
                 <?xml version="1.0" encoding="UTF-8"?>
                 <root><refNode />text</root>
