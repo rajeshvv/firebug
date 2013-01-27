@@ -308,15 +308,18 @@ Dom.setOuterHTML = Deprecated.deprecated("Since Firefox 20, use outerHTML instea
  *
  * @param {String} markup The HTML code
  * @param {Element} referenceNode The reference element (often the element which will receive the fragment)
- * @param {boolean} [selectNodeContent] If set to true, use range.selectNodeContent(referenceElement) instead of range.selectNode(content)
+ * @param {boolean} [selectNodeContents] If set to true, use range.selectNodeContent(referenceElement) instead of range.selectNode(content)
  *
  * @return {DocumentFragment} the document fragment having the generated elements
  */
-Dom.markupToDocFragment = function(markup, referenceElement, selectNodeContent)
+Dom.markupToDocFragment = function(markup, referenceElement, selectNodeContents)
 {
     var doc = referenceElement.ownerDocument;
     var range = doc.createRange();
-    range.selectNode(referenceElement);
+    if (selectNodeContents)
+        range.selectNodeContents(referenceElement);
+    else
+        range.selectNode(referenceElement);
 
     return range.createContextualFragment(markup);
 };
@@ -441,8 +444,9 @@ Dom.eraseNode = function(node)
  */
 Dom.isNode = Deprecated.deprecated("check with <code>o.nodeType</code> instead", function(o)
 {
-    try {
-        return o && o.nodeType;
+    try
+    {
+        return !!(o && o.nodeType);
     }
     catch (ex)
     {
@@ -459,10 +463,12 @@ Dom.isNode = Deprecated.deprecated("check with <code>o.nodeType</code> instead",
  */
 Dom.isElement = Deprecated.deprecated("check with <code>o.nodeType</code> instead", function(o)
 {
-    try {
-        return o && o.nodeType === Node.ELEMENT_NODE;
+    try
+    {
+        return !!(o && o.nodeType === Node.ELEMENT_NODE);
     }
-    catch (ex) {
+    catch (ex)
+    {
         return false;
     }
 });
@@ -476,10 +482,12 @@ Dom.isElement = Deprecated.deprecated("check with <code>o.nodeType</code> instea
  */
 Dom.isRange = function(o)
 {
-    try {
-        return o && o instanceof window.Range;
+    try
+    {
+        return !!(o && o instanceof window.Range);
     }
-    catch (ex) {
+    catch (ex)
+    {
         return false;
     }
 };
