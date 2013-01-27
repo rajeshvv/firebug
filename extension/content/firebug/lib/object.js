@@ -52,11 +52,15 @@ Obj.extend = function(parentObject/*, ...extensions*/)
     var extensions = Array.prototype.slice.call(arguments, 1);
     var newOb = Object.create(parentObject);
 
-    for (var i = 0, len = arguments.length; i < len; ++i)
+    extensions.forEach(function(extension)
     {
-        for (var prop in arguments[i])
-            newOb[prop] = arguments[i][prop];
-    }
+        for (var prop in extension)
+        {
+            // xxxFlorent: TODO copy also getters/setters
+            // any clue ? (use getOwnPropertyDescriptor?)
+            newOb[prop] = extension[prop];
+        }
+    });
 
     return newOb;
 };
