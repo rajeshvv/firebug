@@ -150,9 +150,14 @@ function runTest() {
     FBTest.progress("== Testing Arr.extendArray ==");
     (function()
     {
-        var arr = Arr.extendArray(arguments, [4,5,6]);
+        var ext = [4,5,6];
+        var arr = Arr.extendArray(arguments, ext);
         FBTest.compare("1,2,3,4,5,6", arr, "[Arr.extendArray] the two arrays should have been"+
-            " concatened");
+            " concatened (Array-Like version)");
+        // An optimized way have been added for Array objects (xxxFlorent: benchmark it!):
+        var arr2 = Arr.extendArray(Array.slice(arguments), ext);
+        FBTest.compare("1,2,3,4,5,6", arr2,  "[Arr.extendArray] the two arrays should have been"+
+            " concatened (Array objects version)");
     })(1,2,3);
 
     // ****************************************************************************************** //
