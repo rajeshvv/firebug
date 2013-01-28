@@ -49,16 +49,16 @@ Obj.extend = function(parentObject/*, ...extensions*/)
         throw new Error("Obj.extend on undefined object");
     }
 
-    var extensions = Array.prototype.slice.call(arguments, 1);
-    var newOb = Object.create(parentObject);
+    var newOb = {};
+    var objects = Array.prototype.slice.call(arguments);
 
-    extensions.forEach(function(extension)
+    objects.forEach(function(object)
     {
-        for (var prop in extension)
+        for (var prop in object)
         {
             // xxxFlorent: TODO copy also getters/setters
             // any clue ? (use getOwnPropertyDescriptor?)
-            newOb[prop] = extension[prop];
+            newOb[prop] = object[prop];
         }
     });
 

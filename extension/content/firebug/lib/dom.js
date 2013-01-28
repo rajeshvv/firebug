@@ -240,7 +240,7 @@ Dom.getBody = function(doc)
 Dom.insertAfter = Deprecated.deprecated("use insertBefore(node, referenceNode.nextSibling) instead",
 function(newNode, referenceNode)
 {
-    // xxxFlorent: insertBefore appends a child when the second parameter is null
+    // insertBefore appends a child when the second parameter is null
     if (referenceNode.parentNode)
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 });
@@ -374,10 +374,12 @@ Dom.insertTextIntoElement = function(element, text)
 // ********************************************************************************************* //
 
 /**
- * @deprecated use <code>elt.style.visibility = "collapse"</code> instead
+ * collapses an element.
+ *
+ * @param {Element} elt The element
+ * @param {boolean} collapsed If set to true, collapses the element. Otherwise display it.
  */
-Dom.collapse = Deprecated.deprecated("use elt.style.visibility = \"collapse\" instead", 
-function(elt, collapsed)
+Dom.collapse = function(elt, collapsed)
 {
     if (!elt)
     {
@@ -386,10 +388,10 @@ function(elt, collapsed)
     }
 
     elt.setAttribute("collapsed", collapsed ? "true" : "false");
-});
+};
 
 /**
- * @deprecated
+ * tells whether an element is collapsed or not
  */
 Dom.isCollapsed = function(elt)
 {
@@ -446,7 +448,7 @@ Dom.isNode = Deprecated.deprecated("check with <code>o.nodeType</code> instead",
 {
     try
     {
-        return !!(o && o.nodeType);
+        return o instanceof window.Node;
     }
     catch (ex)
     {
@@ -465,7 +467,7 @@ Dom.isElement = Deprecated.deprecated("check with <code>o.nodeType</code> instea
 {
     try
     {
-        return !!(o && o.nodeType === Node.ELEMENT_NODE);
+        return o instanceof window.Element;
     }
     catch (ex)
     {
@@ -497,7 +499,7 @@ Dom.isRange = function(o)
  *
  * @param {Node} node
  *
- * @return {boolean} True if the node as child elements
+ * @return {boolean} True if the node has child elements
  */
 Dom.hasChildElements = function(node)
 {

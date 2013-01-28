@@ -252,7 +252,7 @@ Arr.extendArray = function(array, array2)
  * insert elements at a specific index
  * NOTE: that method modifies the array passed as the first parameter
  *
- * @param {Array or Array-Like object} array The array in which we insert elements
+ * @param {Array} array The array in which we insert elements
  * @param {Integer} index The index
  * @param {Array or Array-Like object} other The elements to insert
  *
@@ -260,7 +260,10 @@ Arr.extendArray = function(array, array2)
  */
 Arr.arrayInsert = function(array, index, other)
 {
-    var splice = ArrayGen.splice.bind(Array, array, index, 0);
+    if (!Array.isArray(array))
+        throw "Arr.arrayInsert; expected Array object";
+
+    var splice = array.splice.bind(Array, array, index, 0);
     splice.apply(null, other);
     return array;
 };
