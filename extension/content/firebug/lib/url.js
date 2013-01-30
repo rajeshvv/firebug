@@ -114,6 +114,13 @@ Url.splitURLTrue = function(url)
         return {protocol: m[1], domain: m[2], path: m[2]+m[3], name: m[4]+m[5]};
 };
 
+/**
+ * Returns the file extension of a given URL
+ * 
+ * @param {String} url URL, for which to return the file extension
+ * 
+ * @returns {String} File extension
+ */
 Url.getFileExtension = function(url)
 {
     if (!url)
@@ -126,28 +133,38 @@ Url.getFileExtension = function(url)
 
     // Now get the file extension.
     var lastDot = url.lastIndexOf(".");
-    return url.substr(lastDot+1);
+    return url.substr(lastDot + 1);
 };
 
+/**
+ * Checks whether a given URL is a user agent internal URL
+ * 
+ * @param {String} url URL to check
+ * 
+ * @returns {Boolean} True, if URL is a system URL, otherwise false
+ */
 Url.isSystemURL = function(url)
 {
-    if (!url) return true;
-    if (url.length == 0) return true;
-    if (url[0] == "h") return false;
+    if (!url)
+        return true;
+    if (url.length == 0)
+        return true;
+    if (url[0] == "h")
+        return false;
     if (url.substr(0, 9) == "resource:")
         return true;
-    else if (url.substr(0, 16) == "chrome://firebug")
+    if (url.substr(0, 16) == "chrome://firebug")
         return true;
-    else if (url  == "XPCSafeJSObjectWrapper.cpp")
+    if (url  == "XPCSafeJSObjectWrapper.cpp")
         return true;
-    else if (url.substr(0, 6) == "about:")
+    if (url.substr(0, 6) == "about:")
         return true;
-    else if (url.indexOf("firebug-service.js") != -1)
+    if (url.indexOf("firebug-service.js") != -1)
         return true;
-    else if (url.indexOf("/modules/debuggerHalter.js") != -1)
+    if (url.indexOf("/modules/debuggerHalter.js") != -1)
         return true;
-    else
-        return false;
+
+    return false;
 };
 
 Url.isSystemPage = function(win)
@@ -176,12 +193,26 @@ Url.isSystemPage = function(win)
     }
 };
 
+/**
+ * Checks whether a given style sheet is a system style sheet
+ * 
+ * @param {nsIURI} sheet URI of the style sheet
+ * 
+ * @returns {Boolean} True, if the given style sheet is a system style sheet, otherwise false
+ */
 Url.isSystemStyleSheet = function(sheet)
 {
     var href = sheet && sheet.href;
     return href && Url.isSystemURL(href);
 };
 
+/**
+ * Returns the host of a given URI
+ * 
+ * @param {nsIURI} uri URI, for which to return the host
+ * 
+ * @returns {String} Host of the URI
+ */
 Url.getURIHost = function(uri)
 {
     try
@@ -197,6 +228,13 @@ Url.getURIHost = function(uri)
     }
 };
 
+/**
+ * Checks whether a given URL is a local URL
+ * 
+ * @param {String} url URL to check
+ * 
+ * @returns {Boolean} True, if URL is a local URL, otherwise false
+ */
 Url.isLocalURL = function(url)
 {
     if (url.substr(0, 5) == "file:")
@@ -207,6 +245,13 @@ Url.isLocalURL = function(url)
         return false;
 };
 
+/**
+ * Checks whether a given URL is a data URL
+ * 
+ * @param {String} url URL to check
+ * 
+ * @returns {Boolean} True, if URL is a data URL, otherwise false
+ */
 Url.isDataURL = function(url)
 {
     return (url && url.substr(0,5) == "data:");
@@ -224,9 +269,11 @@ Url.getLocalPath = function(url)
 };
 
 /**
- * Mozilla URI from non-web URL
- * @param URL 
- * @returns undefined or nsIURI
+ * Returns a Mozilla URI from a non-web URL
+ * 
+ * @param {String} url Non-web URL 
+ * 
+ * @returns {undefined|nsIURI} Mozilla URI
  */
 Url.getLocalSystemURI = function(url)
 {
@@ -295,6 +342,13 @@ Url.getDataURLForContent = function(content, url)
     return uri;
 };
 
+/**
+ * Returns the domain of a given URL
+ * 
+ * @param {string} url URL, for which to get the domain
+ * 
+ * @return {string} Domain
+ */
 Url.getDomain = function(url)
 {
     var m = /[^:]+:\/{1,3}([^\/]+)/.exec(url);
