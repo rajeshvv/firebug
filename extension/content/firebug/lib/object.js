@@ -56,9 +56,9 @@ Obj.extend = function(parentObject/*, ...extensions*/)
     {
         for (var prop in object)
         {
-            // xxxFlorent: TODO copy also getters/setters
-            // any clue ? (use getOwnPropertyDescriptor?)
-            newOb[prop] = object[prop];
+            var propDesc = getPropertyDescriptor(object, prop);
+            Object.defineProperty(newOb, prop, propDesc);
+            // newOb[prop] = object[prop];
         }
     });
 
@@ -279,6 +279,25 @@ Obj.isNonNativeGetter = function(obj, propName)
 
     return true;
 };
+
+// ********************************************************************************************* //
+// Local helpers
+
+// xxxFlorent: [ES6-getPropertyDescriptor]?
+// http://wiki.ecmascript.org/doku.php?id=harmony:extended_object_api
+// xxxFlorent: until there is no need to move it public, this should remain as a local helper
+//             so we prevent potentential future refactoring
+function getPropertyDescriptor(subject, name)
+{
+    var pd = Object.getOwnPropertyDescriptor(subject, name);
+    var proto = Object.getPrototypeOf(subject);
+    while (pd === undefined && proto !== null)
+    {
+        pd = Object.getOwnPropertyDescriptor(proto, name);
+        proto = Object.getPrototypeOf(proto);
+    }
+    return pd;
+}
 
 // ********************************************************************************************* //
 
