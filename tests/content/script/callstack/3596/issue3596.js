@@ -39,7 +39,7 @@ function runTest()
                 frames = panelNode.querySelectorAll(".objectBox-stackFrame");
 
                 // Verify expanded frame.
-                FBTest.ok(FW.FBL.hasClass(frames[1], "hasTwisty.opened"),
+                FBTest.ok(FW.FBL.hasClass(frames[1], "hasTwisty opened"),
                     "The second frame must be expanded");
 
                 // Verify selected frame.
