@@ -263,7 +263,7 @@ Arr.arrayInsert = function(array, index, other)
     if (!Array.isArray(array))
         throw "Arr.arrayInsert; expected Array object";
 
-    var splice = array.splice.bind(Array, array, index, 0);
+    var splice = array.splice.bind(array, index, 0);
     splice.apply(null, other);
     return array;
 };
