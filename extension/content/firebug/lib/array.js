@@ -102,7 +102,7 @@ Arr._isDOMTokenList = function(obj)
     return false;
 };
 
-
+// At least sometimes the keys will be on user-level window objects
 /**
  * @deprecated Use Object.keys instead
  * see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/keys
