@@ -74,7 +74,6 @@ domplate.context = function(context, fn)
     domplate.topContext = lastContext;
 };
 
-// xxxFlorent: should we keep that?
 Domplate.domplate = domplate;
 
 Domplate.TAG = function()
