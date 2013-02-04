@@ -4,7 +4,6 @@ define([
     "firebug/lib/trace",
     "firebug/lib/string",
     "firebug/lib/deprecated",
-    "firebug/lib/function",
 ],
 function(FBTrace, Str, Deprecated, Func) {
 "use strict";
