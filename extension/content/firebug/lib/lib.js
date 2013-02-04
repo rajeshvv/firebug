@@ -597,8 +597,6 @@ catch (ex)
 for (var i in FBLExtension)
     FBL[i] = FBLExtension[i];
 
-Deprecated.deprecatedROProp(FBL, "SourceLink", deprecationMessage, SourceLink.SourceLink);
-
 // deprecated
 FBL.$ = Deprecated.deprecated("Use document.getElementById(id) instead", function(id, doc)
 {
