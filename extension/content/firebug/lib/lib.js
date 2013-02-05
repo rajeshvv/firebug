@@ -47,9 +47,6 @@ var FBL = window.FBL || {};  // legacy.js adds top.FBL, FIXME, remove after ifra
 // Backward compatibility with extensions
 // deprecated
 
-// xxxFlorent: add a page in the wiki explaining how to use AMD in Firebug-related projects
-const deprecationMessage = "Don't use FBL anymore. Please, use AMD instead";
-
 var libs = [Obj, Xpcom, Locale, Events, Wrapper, Url, StackFrame, Css, Dom, Http, Win, Search,
 Xpath, Str, Xml, Persist, Arr, System, Json, Fonts, Menu, ToggleBranch, Debug, Keywords, Firefox, 
 Deprecated ,Domplate];
@@ -102,11 +99,6 @@ try
 catch (err)
 {
 }
-
-// deprecated
-// FBL.reUpperCase = /[A-Z]/;
-Deprecated.deprecatedROProp(FBL, "reUpperCase", "Use the following RegExp instead: /[A-Z]/",
-    /[A-Z]/);
 
 // ********************************************************************************************* //
 // Registration
