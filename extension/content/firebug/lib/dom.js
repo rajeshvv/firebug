@@ -131,8 +131,8 @@ function(node, className)  // className, className, ...
 /**
  * @deprecated Use native Firefox node.getElementsByClassName("[attrName=attrValue]")
  */
-Dom.getElementsByAttribute = Deprecated.deprecated("Use node.querySelectorAll(\"[attrName=attrValue]\") instead",
-function(node, attrName, attrValue)
+Dom.getElementsByAttribute = Deprecated.deprecated("Use "+
+"node.querySelectorAll(\"[attrName=attrValue]\") instead", function(node, attrName, attrValue)
 {
     function iteratorHelper(node, attrName, attrValue, result)
     {
@@ -307,8 +307,10 @@ Dom.setOuterHTML = Deprecated.deprecated("Since Firefox 20, use outerHTML instea
  * Converts a chunk of HTML code into DOM elements (stored in a document fragment)
  *
  * @param {String} markup The HTML code
- * @param {Element} referenceNode The reference element (often the element which will receive the fragment)
- * @param {boolean} [selectNodeContents] If set to true, use range.selectNodeContent(referenceElement) instead of range.selectNode(content)
+ * @param {Element} referenceNode The reference element
+ *        (often the element which will receive the fragment)
+ * @param {boolean} [selectNodeContents] If set to true, use range.selectNodeContent
+ *        (referenceElement) instead of range.selectNode(content)
  *
  * @return {DocumentFragment} the document fragment having the generated elements
  */

@@ -24,8 +24,7 @@ var Arr = {};
 // use them to call Array methods with Array-Like objects (arguments, String, NodeList...)
 // example: var firstArg = Array.forEach(nodeList, func);
 //
-// 1. xxxFlorent: should be deprecated as soon Array generics are standardized in ES5 or ES6
-// 2. xxxFlorent: BTW, can we consider Array generic methods as safe to be used?? What would happen if it is eventually abandoned?
+// xxxFlorent: [ES6-ARRAY_GENERICS]
 var ArrayGen = {};
 (function()
 {

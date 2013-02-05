@@ -46,7 +46,8 @@ Obj.bind = function(fn, thisObject/*, ...origArgs*/)
 
 // xxxFlorent: TODO: [REST]
 /**
- * Creates a new function that, when called, uses the provided <code>this</code> value and arguments.
+ * Creates a new function that, when called, uses the provided <code>this</code> value and the
+ * provided arguments.
  * At the contrary of <code>Function.prototype.bind</code>, any parameter provided at the call is
  * ignored.
  *

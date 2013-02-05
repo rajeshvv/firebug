@@ -170,8 +170,8 @@ function runTest() {
 
         result = Arr.arrayInsert(args, indInsert, otherArr);
 
-        FBTest.compare("0,1,2,3,4,5,6", result, "[Arr.arrayInsert] the insertion of the other array"+
-            "content should work with Arrays");
+        FBTest.compare("0,1,2,3,4,5,6", result, "[Arr.arrayInsert] the insertion of the other "+
+            "array content should work with Arrays");
 
         var failWithArrayLike = false;
         try
