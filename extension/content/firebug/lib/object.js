@@ -5,7 +5,7 @@ define([
     "firebug/lib/string",
     "firebug/lib/deprecated",
 ],
-function(FBTrace, Str, Deprecated, Func) {
+function(FBTrace, Str, Deprecated) {
 "use strict";
 // xxxFlorent: TODO add that specific tag in jsdoc...
 
