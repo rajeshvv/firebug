@@ -6,9 +6,15 @@ define([
     "firebug/lib/wrapper",
     "firebug/lib/events",
     "firebug/lib/dom",
+    "firebug/lib/object",
 ],
-function(Wrapper, Events, Dom) {
+function(Wrapper, Events, Dom, Obj) {
 "use strict";
+
+// ********************************************************************************************* //
+// Constants
+
+const Cu = Components.utils;
 
 // ********************************************************************************************* //
 // Command Line APIs
@@ -182,71 +188,90 @@ function createFirebugCommandLine(context, win)
             FBTrace.sysout("commandLine.Exposed; did evaluate on " + expr);
     }
 
+    function getGlobal()
+    {
+        var dglobal= Dom.getMappedData(win.document, "commandline-dglobal");
+        var dbg, scope;
+        if (!dglobal)
+        {
+            scope = {};
+            Cu.import("resource://gre/modules/jsdebugger.jsm", scope);
+            scope.addDebuggerToGlobal(window);
+            dbg = new window.Debugger();
+            delete window.Debugger;
+            // should also be in the context of a Frame when a breakpoint is active
+            dglobal = dbg.addDebuggee(win);
+            dbg.removeDebuggee(win);
+            Dom.setMappedData(win.document, "commandline-dglobal", dglobal);
+        }
+        return dglobal;
+    }
+
     function evaluate(expr, origExpr)
     {
         var result;
-        var baseLine;
-        try
+        var resObj;
+        var dbgCL = {};
+        var dglobal = getGlobal();
+        dbgCL = dglobal.makeDebuggeeValue({});
+        for (var i in commandLine)
         {
-            // Errors thrown from within the expression of the eval call will
-            // have a line number equal to (line of eval, 1-based) + (line in
-            // expression, 0-based) - keep track of the former term so we can
-            // correct it later.
-            baseLine = Components.stack.lineNumber; result = contentView.eval(expr);
-
-            // See Issue 5221
-            //var result = FirebugEvaluate(expr, contentView);
-            notifyFirebug([result], "evaluated", "firebugAppendConsole");
+            if (commandLine.hasOwnProperty(i) && !win.wrappedJSObject.hasOwnProperty(i))
+            {
+                // xxxFlorent: FIXME I get an error when attempting to make dbgCL a debuggee object
+                //  and defining properties using dbgCL.defineProperty...
+                var descriptor = Object.getOwnPropertyDescriptor(commandLine, i);
+                if (descriptor.get)
+                    continue;
+                    /*dbgCL.defineProperty(i, dbgCL.makeDebuggeeValue({
+                        get: dbgCL.makeDebuggeeValue(descriptor.get)
+                    }));*/
+                else if (typeof commandLine[i] === "function")
+                    dbgCL[i] = dglobal.makeDebuggeeValue(commandLine[i]);
+            }
         }
-        catch (exc)
+
+        // xxxFlorent: why actually evalInGlobalWithBindings evaluates as if 
+        //      within the current frame?
+        //      for example:
+        //          1. set a breakpoint within a function
+        //          2. trigger that breakpoint
+        //          3. type "this" in the Command Line
+        resObj = dglobal.evalInGlobalWithBindings(expr, dbgCL);
+        var unwrap = Obj.unwrapDebuggeeValue.bind(null, win.wrappedJSObject, dglobal);
+
+        // case of abnormal termination, as if by the "slow script" dialog box
+        if (!resObj)
+            return;
+        else if (resObj.hasOwnProperty("return"))
+            result = unwrap(resObj.return);
+        else if (resObj.hasOwnProperty("yield"))
+            result = unwrap(resObj.yield);
+        else if (resObj.hasOwnProperty("throw"))
         {
-            // change source and line number of exeptions from commandline code
-            // create new error since properties of nsIXPCException are not modifiable
-            var shouldModify = false, isXPCException = false;
-            var fileName = exc.filename || exc.fileName;
-            var lineNumber = null;
-            if (fileName.lastIndexOf("chrome:", 0) === 0)
-            {
-                if (fileName === Components.stack.filename)
-                {
-                    shouldModify = true;
-                    if (exc.filename)
-                        isXPCException = true;
-                    lineNumber = exc.lineNumber;
-                }
-                else if (exc._dropFrames)
-                {
-                    lineNumber = findLineNumberInExceptionStack(exc.stack);
-                    shouldModify = (lineNumber !== null);
-                }
-            }
+            result = unwrap(resObj.throw);
 
-            if (shouldModify)
-            {
-                result = new Error();
-                result.stack = null;
-                result.source = expr;
-                result.message = exc.message;
-                result.lineNumber = lineNumber - baseLine + 1;
+            // Lie and show the pre-transformed expression instead.
+            // xxxFlorent: localize?
+            result.fileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE:" +
+                " */" + encodeURIComponent("\n"+origExpr);
+            result.source = expr;
+            result.stack = null;
 
-                // Lie and show the pre-transformed expression instead.
-                result.fileName = "data:," + encodeURIComponent(origExpr);
+            // change the line number to take into account the line of comment in the filename
+            result.lineNumber++;
 
-                // The error message can also contain post-transform details about the
-                // source, but it's harder to lie about. Make it prettier, at least.
-                if (typeof result.message === "string")
-                    result.message = result.message.replace(/__fb_scopedVars\(/g, "<get closure>(");
-
-                if (!isXPCException)
-                    result.name = exc.name;
-            }
-            else
-            {
-                result = exc;
-            }
+            // correct the message to replace __fb_scopedVars with "%" (Closure Inspector):
+            if (typeof result.message === "string")
+                result.message = result.message.replace(/__fb_scopedVars\(/g, "<get closure>(");
 
             notifyFirebug([result], "evaluateError", "firebugAppendConsole");
+            return;
         }
+
+        // See Issue 5221
+        //var result = FirebugEvaluate(expr, contentView);
+        notifyFirebug([result], "evaluated", "firebugAppendConsole");
     }
 
     function notifyFirebug(objs, methodName, eventID)

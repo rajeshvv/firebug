@@ -41,9 +41,6 @@ const Cc = Components.classes;
 
 const commandPrefix = ">>>";
 
-// XXX This is broken - "." doesn't match newlines. Not sure if we want to fix it.
-const reCmdSource = /^with\(_FirebugCommandLine\)\{(.*)\};$/;
-
 // ********************************************************************************************* //
 // Command Line
 
@@ -182,8 +179,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         event.initEvent("firebugCommandLine", true, false);
         Dom.setMappedData(win.document, "firebug-methodName", "evaluate");
 
-        origExpr = "with(_FirebugCommandLine){\n" + (origExpr || expr) + "\n};";
-        expr = "with(_FirebugCommandLine){\n" + expr + "\n};";
+        origExpr = origExpr || expr;
         Dom.setMappedData(win.document, "firebug-expr-orig", origExpr);
         Dom.setMappedData(win.document, "firebug-expr", expr);
 
@@ -219,13 +215,6 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         {
             consoleHandler.setEvaluateErrorCallback(function useErrorFunction(result)
             {
-                if (result)
-                {
-                    var m = reCmdSource.exec(result.source);
-                    if (m && m.length > 0)
-                        result.source = m[1];
-                }
-
                 Firebug.Console.logFormatted([result], context, "error", true);
             });
         }
@@ -304,7 +293,6 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         this.initializeCommandLineIfNeeded(context, win);
 
         expr = expr.toString();
-        expr = "with(_FirebugCommandLine){\n" + expr + "\n};";
 
         var consoleHandler = Firebug.Console.injector.getConsoleHandler(context, win);
 
@@ -338,13 +326,6 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         {
             consoleHandler.evaluateError = function useErrorFunction(result)
             {
-                if (result)
-                {
-                    var m = reCmdSource.exec(result.source);
-                    if (m && m.length > 0)
-                        result.source = m[1];
-                }
-
                 Firebug.Console.logFormatted([result], context, "error", true);
             };
         }

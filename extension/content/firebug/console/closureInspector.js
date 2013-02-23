@@ -7,9 +7,10 @@
 
 define([
     "firebug/firebug",
-    "firebug/lib/wrapper"
+    "firebug/lib/wrapper",
+    "firebug/lib/object",
 ],
-function(Firebug, Wrapper) {
+function(Firebug, Wrapper, Obj) {
 "use strict";
 
 // ********************************************************************************************* //
@@ -119,15 +120,7 @@ var ClosureInspector =
         return (typeof dobj !== "object" || dobj === OptimizedAway);
     },
 
-    unwrap: function(global, dglobal, obj)
-    {
-        dglobal.defineProperty("_firebugUnwrappedDebuggerObject", {
-            value: obj,
-            writable: true,
-            configurable: true
-        });
-        return global._firebugUnwrappedDebuggerObject;
-    },
+    unwrap: Obj.unwrapDebuggeeValue,
 
     isScopeInteresting: function(scope)
     {
