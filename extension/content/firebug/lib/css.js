@@ -2693,6 +2693,7 @@ Css.pseudoClasses =
     ":-moz-window-inactive"
 ];
 
+// https://developer.mozilla.org/en-US/docs/CSS/CSS_Reference/Mozilla_Extensions#Pseudo-elements_and_pseudo-classes
 // http://mxr.mozilla.org/mozilla-central/source/browser/devtools/styleinspector/CssLogic.jsm
 Css.pseudoElements =
 [
@@ -2700,13 +2701,13 @@ Css.pseudoElements =
     "::before",
     "::first-letter",
     "::first-line",
-    "::selection",
     "::-moz-focus-inner",
     "::-moz-focus-outer",
     "::-moz-list-bullet",
     "::-moz-list-number",
     "::-moz-math-anonymous",
     "::-moz-math-stretchy",
+    "::-moz-placeholder",
     "::-moz-progress-bar",
     "::-moz-selection"
 ];
