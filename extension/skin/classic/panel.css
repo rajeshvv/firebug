@@ -16,3 +16,7 @@
 @import "chrome://firebug/skin/performanceTiming.css";
 @import "chrome://firebug/skin/tableRep.css";
 @import "chrome://firebug-os/skin/panel.css";
+
+/* JSD2 additions*/
+@import "chrome://firebug/skin/scriptPanel.css";
+@import "chrome://firebug/skin/callstackPanel.css";

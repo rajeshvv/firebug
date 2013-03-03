@@ -8,15 +8,14 @@ define([
     "firebug/lib/locale",
     "firebug/lib/wrapper",
     "firebug/lib/url",
-    "firebug/js/stackFrame",
+    "firebug/debugger/stack/stackFrame",
     "firebug/lib/events",
     "firebug/lib/css",
     "firebug/lib/dom",
     "firebug/lib/string",
-    "firebug/js/fbs",
 ],
 function(Obj, Firebug, Domplate, FirebugReps, Locale, Wrapper, Url, StackFrame, Events,
-    Css, Dom, Str, FBS) {
+    Css, Dom, Str) {
 
 // ********************************************************************************************* //
 // Constants
@@ -64,8 +63,9 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 
         // TODO this should be a panel listener operation.
 
+        // xxxHonza: Profiler in JSD2 should not need the Script panel.
         // The profiler is available only if the Script panel and Console are enabled
-        var scriptPanel = Firebug.currentContext.getPanel("script", true);
+        var scriptPanel = null;//Firebug.currentContext.getPanel("script", true);
         var consolePanel = Firebug.currentContext.getPanel("console", true);
         var disabled = (scriptPanel && !scriptPanel.isEnabled()) ||
             (consolePanel && !consolePanel.isEnabled());
@@ -102,6 +102,9 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 
     toggleProfiling: function(context)
     {
+        //xxxHonza: FBS doesn't exist now
+        return;
+
         if (FBS.profiling)
             this.stopProfiling(context);
         else
@@ -110,6 +113,9 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 
     startProfiling: function(context, title)
     {
+        //xxxHonza: FBS doesn't exist now
+        return;
+
         FBS.startProfiling();
 
         Firebug.chrome.setGlobalAttribute("cmd_firebug_toggleProfiling", "checked", "true");
@@ -129,6 +135,9 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 
     stopProfiling: function(context, cancelReport)
     {
+        //xxxHonza: FBS doesn't exist now
+        return;
+
         var totalTime = FBS.stopProfiling();
         if (totalTime == -1)
             return;

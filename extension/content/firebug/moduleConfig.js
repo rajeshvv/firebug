@@ -1,5 +1,11 @@
 /* See license.txt for terms of usage */
 
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+var Cu = Components.utils;
+
+var EXPORTED_SYMBOLS = ["Firebug"];
+
 var Firebug = Firebug || {};
 
 // ********************************************************************************************* //
@@ -39,7 +45,6 @@ Firebug.getModuleLoaderConfig = function(baseConfig)
         "firebug/trace/traceModule",
         "firebug/chrome/navigationHistory",
         "firebug/chrome/knownIssues",
-        "firebug/js/sourceFile",
         "firebug/chrome/shortcuts",
         "firebug/firefox/start-button/startButtonOverlay",
         "firebug/firefox/external-editors/externalEditors",
@@ -50,17 +55,22 @@ Firebug.getModuleLoaderConfig = function(baseConfig)
         "firebug/dom/domSidePanel",
         "firebug/console/commandLinePopup",
         "firebug/accessible/a11y",
-        "firebug/js/scriptPanel",
-        "firebug/js/callstack",
         "firebug/console/consoleInjector",
         "firebug/net/spy",
-        "firebug/js/tabCache",
+        "firebug/net/tabCache",
         "firebug/chrome/activation",
         "firebug/css/stylePanel",
         "firebug/css/computedPanel",
         "firebug/cookies/cookieModule",
         "firebug/cookies/cookiePanel",
         "firebug/css/selectorPanel",
+
+        // Remoting
+        "firebug/remoting/connectionMenu",
+        "firebug/remoting/tabListMenu",
+
+        // JSD2
+        "firebug/debugger/main",
     ];
 
     return config;
@@ -101,10 +111,12 @@ Firebug.registerExtension = function(extName, extConfig)
     //config.paths[extName] = extName + "/content";
     config.paths[extName] = "chrome://" + extName + "/content";
 
+    var main = extConfig.main ? extConfig.main : "main";
+
     // Load main.js module (the entry point of the extension) and support for tracing.
     // All other extension modules should be loaded within "main" module.
     Firebug.require(config, [
-        extName + "/main",
+        extName + "/" + main,
         "firebug/lib/trace"
     ],
     function(Extension, FBTrace)
@@ -113,7 +125,7 @@ Firebug.registerExtension = function(extName, extConfig)
         {
             extConfig.app = Extension;
 
-            // Extension intialization procedure should be within this method (in main.js).
+            // Extension initialization procedure should be within this method (in main.js).
             if (Extension.initialize)
                 Extension.initialize();
 

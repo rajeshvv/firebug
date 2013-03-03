@@ -9,8 +9,8 @@ define([
     "firebug/lib/locale",
     "firebug/lib/events",
     "firebug/lib/wrapper",
-    "firebug/js/sourceLink",
-    "firebug/js/stackFrame",
+    "firebug/debugger/script/sourceLink",
+    "firebug/debugger/stack/stackFrame",
     "firebug/lib/dom",
     "firebug/lib/css",
     "firebug/lib/search",
@@ -25,7 +25,7 @@ define([
     "firebug/dom/domEditor",
     "firebug/dom/domReps",
     "firebug/editor/editor",
-    "firebug/js/breakpoint",
+    "firebug/debugger/breakpoints/breakpointModule",
     "firebug/chrome/searchBox",
     "firebug/dom/domModule",
     "firebug/console/autoCompleter"
@@ -215,7 +215,7 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Firebug.Panel,
 
         if (typeof object === "undefined")
             return 1000;
-        else if (object instanceof SourceLink.SourceLink)
+        else if (object instanceof SourceLink)
             return 0;
         else
             return 1; // just agree to support everything but not aggressively.
@@ -408,7 +408,7 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Firebug.Panel,
             var rowValue = member.value;
 
             var isWatch = Css.hasClass(row, "watchRow");
-            var isStackFrame = rowObject instanceof StackFrame.StackFrame;
+            var isStackFrame = rowObject instanceof StackFrame;
             var label, tooltiptext;
 
             items.push(
@@ -742,7 +742,7 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Firebug.Panel,
         // 2) object[propName] can also throws in case of e.g. non existing "abc.abc" prop name.
         try
         {
-            if (object instanceof StackFrame.StackFrame)
+            if (object instanceof StackFrame)
                 return Firebug.Debugger.evaluate(propName, this.context);
             else
                 return object[propName];
@@ -840,7 +840,7 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Firebug.Panel,
                     editValue = "\"" + Str.escapeJS(propValue) + "\"";
                 else if (propValue === null)
                     editValue = "null";
-                else if (object instanceof window.Window || object instanceof StackFrame.StackFrame)
+                else if (object instanceof window.Window || object instanceof StackFrame)
                     editValue = getRowName(row);
                 else
                     editValue = "this." + getRowName(row); // XXX "this." doesn't actually work
@@ -893,7 +893,7 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Firebug.Panel,
             return;
 
         var object = this.getRealRowObject(row);
-        if (object && !(object instanceof StackFrame.StackFrame))
+        if (object && !(object instanceof StackFrame))
         {
             Firebug.CommandLine.evaluate(value, this.context, object, this.context.getCurrentGlobal(),
                 function success(result, context)
@@ -945,7 +945,7 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Firebug.Panel,
             // Clear cached scope chain (it'll be regenerated the next time the getScopes
             // is executed). This forces the watch window to update in case a closer scope
             // variables have been changed during a debugging session.
-            if (object instanceof StackFrame.StackFrame)
+            if (object instanceof StackFrame)
                 object.clearScopes();
         }
 

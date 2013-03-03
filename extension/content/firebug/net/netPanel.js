@@ -10,7 +10,7 @@ define([
     "firebug/lib/events",
     "firebug/lib/options",
     "firebug/lib/url",
-    "firebug/js/sourceLink",
+    "firebug/debugger/script/sourceLink",
     "firebug/lib/http",
     "firebug/lib/css",
     "firebug/lib/dom",
@@ -23,7 +23,7 @@ define([
     "firebug/net/netUtils",
     "firebug/net/netProgress",
     "firebug/css/cssReps",
-    "firebug/js/breakpoint",
+    "firebug/debugger/breakpoints/breakpointConditionEditor",
     "firebug/net/xmlViewer",
     "firebug/net/svgViewer",
     "firebug/net/jsonViewer",
@@ -37,7 +37,7 @@ define([
 ],
 function(Obj, Firebug, Firefox, Domplate, Xpcom, Locale,
     Events, Options, Url, SourceLink, Http, Css, Dom, Win, Search, Str,
-    Arr, System, Menu, NetUtils, NetProgress, CSSInfoTip) {
+    Arr, System, Menu, NetUtils, NetProgress, CSSInfoTip, ConditionEditor) {
 
 with (Domplate) {
 
@@ -286,7 +286,7 @@ NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
     supportsObject: function(object, type)
     {
-        return ((object instanceof SourceLink.SourceLink && object.type == "net") ? 2 : 0);
+        return ((object instanceof SourceLink && object.type == "net") ? 2 : 0);
     },
 
     getOptionsMenuItems: function()
@@ -1620,14 +1620,14 @@ var NetPanelSearch = function(panel, rowFinder)
     };
 };
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 Firebug.NetMonitor.ConditionEditor = function(doc)
 {
-    Firebug.Breakpoint.ConditionEditor.apply(this, arguments);
+    ConditionEditor.apply(this, arguments);
 };
 
-Firebug.NetMonitor.ConditionEditor.prototype = domplate(Firebug.Breakpoint.ConditionEditor.prototype,
+Firebug.NetMonitor.ConditionEditor.prototype = domplate(ConditionEditor.prototype,
 {
     endEditing: function(target, value, cancel)
     {

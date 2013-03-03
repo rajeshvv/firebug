@@ -67,5 +67,12 @@ pref("extensions.firebug.DBG_EXTERNALEDITORS", false);  // integration with exte
 pref("extensions.firebug.DBG_OBSERVERS", false);        // track/untrack support, should be set, then restart Firefox
 pref("extensions.firebug.DBG_EVENTLISTENERS", false);   // track/untrack for registered event listeners, restart needed
 pref("extensions.firebug.DBG_COMMANDEDITOR", false);    // Multiline console based on SourceEditor (Orion)
+pref("extensions.firebug.DBG_CONNECTION", false);       // Connection to the remote browser (for remote debugging)
 pref("extensions.firebug.DBG_MENU", false);             // Menus and context menus in Firebug
+pref("extensions.firebug.DBG_BTI", false);              // Browser Tools Interface
+pref("extensions.firebug.DBG_DOMTREE", false);          // DomTree Widget
+pref("extensions.firebug.DBG_GRIPCACHE", false);        // Cache for remote objects - grips (comes over RDP)
+pref("extensions.firebug.DBG_SELECTOR", false);         // Selector side panel (in the CSS panel)
+pref("extensions.firebug.DBG_SCRIPTVIEW", false);       // Script view is responsible for displaying JS source.
+pref("extensions.firebug.DBG_DEBUGGERTOOL", false);     // DebuggerTool, implementing debugger actions and communicating with the server side.
 pref("extensions.firebug.DBG_ELEMENTS", false);         // Elements side panel (in the CSS panel)

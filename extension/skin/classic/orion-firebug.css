@@ -1,20 +1,23 @@
 /* See license.txt for terms of usage */
 
-/************************************************************************************************/
+/*************************************************************************************************/
 /* The Default Mozilla Orion Theme */
 
 /* From some reason, importing the default theme this way causes issue 5488 */
 @import "chrome://browser/skin/devtools/orion.css";
 
-/************************************************************************************************/
+/*************************************************************************************************/
 /* Custom Styles for Command Editor (Orion) */
 
 .viewContainer {
+    font-size: 11px; /* testing */
     /*font-size: 11px; see issue 5488*/
+    background-color: rgb(238, 238, 238) !important;
 }
 
 .view {
-    background: white;
+    background: white !important;
+    padding-left: 10px !important;
 }
 
 .token_string {
@@ -26,4 +29,75 @@
     color: blue;
 }
 
-/************************************************************************************************/
+.ruler {
+    background-color: rgb(238, 238, 238) !important;
+}
+
+.ruler.lines {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
+/*************************************************************************************************/
+/* Breakpoints */
+
+.annotation.breakpoint > DIV.annotationHTML {
+    background-image: url(chrome://firebug/skin/breakpoint.png);
+    background-position: top !important;
+}
+
+.annotation.breakpoint.condition > DIV.annotationHTML {
+    background-image: url(chrome://firebug/skin/breakpointCondition.png);
+    background-position: top !important;
+}
+
+.annotation.breakpoint.disabled > DIV.annotationHTML {
+    background-image: url(chrome://firebug/skin/breakpointDisabled.png);
+    background-position: top !important;
+}
+
+.annotationOverview.breakpoint.disabled {
+    background-color: silver;
+    border: 1px solid grey;
+}
+
+.annotation.debugLocation > DIV.annotationHTML {
+    background-image: url(chrome://firebug/skin/exe.png);
+    color: #000000;
+}
+
+/**
+ * When the user right click on a line with no breakpoint and picks "Edit Breakpoint Condition"
+ * The related annotation is marked as 'editing'. Use the style and display a breakpoint
+ * icon indicating that the breakpoint will be auto-created if the user provides a condition.
+ */
+.ruler.annotations > DIV.editing {
+    background-image: url(chrome://firebug/skin/breakpoint.png);
+    background-position: top !important;
+    background-repeat: no-repeat !important;
+}
+
+/*************************************************************************************************/
+/* The current debug location (execution line) */
+
+.annotation.breakpoint.debugLocation > DIV.annotationHTML {
+    background-image: url(chrome://firebug/skin/breakpointExe.png);
+}
+
+.annotationLine.debugLocation {
+    outline: 1px solid #D9D9B6;
+    margin-left: -10px;
+    padding-left: 10px;
+    background-color: lightgoldenrodyellow;
+}
+
+/*************************************************************************************************/
+/* Caret Location */
+
+.annotationLine.currentLine {
+    background-color: transparent !important;
+}
+
+.annotationLine.currentLine.debugLocation {
+    background-color: lightgoldenrodyellow !important;
+}

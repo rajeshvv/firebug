@@ -2,6 +2,7 @@
 
 define([
     "firebug/lib/object",
+    "firebug/lib/array",
     "arch/compilationunit",
     "firebug/lib/events",
     "firebug/lib/url",
@@ -9,7 +10,7 @@ define([
     "firebug/lib/css",
     "firebug/chrome/plugin",
 ],
-function(Obj, CompilationUnit, Events, Url, Win, Css) {
+function(Obj, Arr, CompilationUnit, Events, Url, Win, Css) {
 
 // ********************************************************************************************* //
 // Constants
@@ -54,6 +55,12 @@ Firebug.TabContext = function(win, browser, chrome, persistedState)
 
 Firebug.TabContext.prototype =
 {
+    getId: function()
+    {
+        // UID is set by {@TabWatcher} in TabWatcher.createContext() method.
+        return this.uid;
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Browser Tools Interface BrowserContext
 
@@ -64,7 +71,23 @@ Firebug.TabContext.prototype =
 
     getAllCompilationUnits: function()
     {
-        return Firebug.SourceFile.mapAsArray(this.compilationUnits);
+        return Arr.values(this.compilationUnits);
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Tools (proxies)
+
+    getTool: function(name)
+    {
+        return Firebug.getTool(name);
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Connection
+
+    getConnection: function()
+    {
+        return Firebug.proxy.connection;
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -132,7 +155,11 @@ Firebug.TabContext.prototype =
         if (FBTrace.DBG_COMPILATION_UNITS)
             FBTrace.sysout("onCompilationUnit " + url, [this, url, kind] );
 
-        Firebug.connection.dispatch("onCompilationUnit", [this, url, kind]);
+         var compilationUnit = new CompilationUnit(url, this);
+         compilationUnit.kind = kind;
+         this.compilationUnits[url] = compilationUnit;
+
+        //Firebug.connection.dispatch("onCompilationUnit", [this, url, kind]);
 
         // HACKs
         var compilationUnit = this.getCompilationUnit(url);
@@ -145,16 +172,6 @@ Firebug.TabContext.prototype =
         }
 
         compilationUnit.sourceFile = sourceFile;
-
-        compilationUnit.getSourceLines(-1, -1, function onLines(compilationUnit,
-            firstLineNumber, lastLineNumber, lines)
-        {
-            Firebug.connection.dispatch("onSourceLines", arguments);
-
-            if (FBTrace.DBG_COMPILATION_UNITS)
-                FBTrace.sysout("onSourceLines "+compilationUnit.getURL() + " " + lines.length +
-                    " lines", compilationUnit);
-        });
     },
 
     removeSourceFile: function(sourceFile)

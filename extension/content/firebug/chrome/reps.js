@@ -13,8 +13,8 @@ define([
     "firebug/lib/wrapper",
     "firebug/lib/options",
     "firebug/lib/url",
-    "firebug/js/sourceLink",
-    "firebug/js/stackFrame",
+    "firebug/debugger/script/sourceLink",
+    "firebug/debugger/stack/stackFrame",
     "firebug/lib/css",
     "firebug/lib/dom",
     "firebug/chrome/window",
@@ -42,17 +42,6 @@ const Ci = Components.interfaces;
 
 // xxxHonza: the only global should be Firebug object.
 var FirebugReps = window.FirebugReps = {};
-
-try
-{
-    // xxxHonza: RJS
-    var FBS = {};
-    Components.utils["import"]("resource://firebug/firebug-service.js", FBS);
-    var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"].getService(Ci.jsdIDebuggerService);
-}
-catch (err)
-{
-}
 
 // ********************************************************************************************* //
 // Common Tags
@@ -294,8 +283,8 @@ FirebugReps.Func = domplate(Firebug.Rep,
             return;
 
         var scriptInfo = Firebug.SourceFile.getSourceFileAndLineByScript(context, script);
-        var monitored = scriptInfo ? FBS.fbs.isMonitored(scriptInfo.sourceFile.href,
-            scriptInfo.lineNo) : false;
+        var monitored = false; // xxxHonza: FBS doesn't exist scriptInfo ? FBS.fbs.isMonitored(scriptInfo.sourceFile.href,
+            //scriptInfo.lineNo) : false;
 
         var self = this;
         var name = script ? StackFrame.getFunctionName(script, context) : fn.name;
@@ -882,8 +871,6 @@ function instanceOf(object, Klass)
     return false;
 }
 
-
-
 // ********************************************************************************************* //
 
 FirebugReps.Element = domplate(Firebug.Rep,
@@ -1174,6 +1161,11 @@ FirebugReps.Element = domplate(Firebug.Rep,
 
     supportsObject: function(object, type)
     {
+        // Remote objects can't use instanceof operand so, they use 'type' instead.
+        // All HTML element types starts with 'HTML' prefix.
+        if (Str.hasPrefix(type, "HTML"))
+            return true;
+
         return object instanceof window.Element;
     },
 
@@ -1665,7 +1657,7 @@ FirebugReps.CSSRule = domplate(Firebug.Rep,
         }
         else if (window.CSSPageRule && rule instanceof window.CSSPageRule)
         {
-        	return "";
+        	return rule.selectorText || "";
         }
         else if (rule instanceof window.CSSNameSpaceRule)
         {
@@ -1966,7 +1958,7 @@ FirebugReps.SourceLink = domplate(Firebug.Rep,
 
     supportsObject: function(object, type)
     {
-        return object instanceof SourceLink.SourceLink;
+        return object instanceof SourceLink;
     },
 
     getTooltip: function(sourceLink)
@@ -2206,7 +2198,7 @@ FirebugReps.StackFrame = domplate(Firebug.Rep,
 
     getSourceLink: function(stackFrame)
     {
-        var sourceLink = new SourceLink.SourceLink(stackFrame.href, stackFrame.line, "js");
+        var sourceLink = new SourceLink(stackFrame.href, stackFrame.line, "js");
         return sourceLink;
     },
 
@@ -2271,7 +2263,7 @@ FirebugReps.StackFrame = domplate(Firebug.Rep,
 
     supportsObject: function(object, type)
     {
-        return object instanceof StackFrame.StackFrame;
+        return object instanceof StackFrame;
     },
 
     inspectObject: function(stackFrame, context)
@@ -2413,7 +2405,7 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
 
     hasErrorBreak: function(error)
     {
-        return FBS.fbs.hasErrorBreakpoint(Url.normalizeURL(error.href), error.lineNo);
+        return false; //xxxHonza: FBS doesn't exist FBS.fbs.hasErrorBreakpoint(Url.normalizeURL(error.href), error.lineNo);
     },
 
     getDuplication: function(msgId)
@@ -2516,7 +2508,7 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
     getSourceLink: function(error)
     {
         var ext = error.category == "css" ? "css" : "js";
-        return error.lineNo ? new SourceLink.SourceLink(error.href, error.lineNo, ext,
+        return error.lineNo ? new SourceLink(error.href, error.lineNo, ext,
             null, null, error.colNumber) : null;
     },
 
@@ -2689,7 +2681,7 @@ FirebugReps.Except = domplate(Firebug.Rep,
         var trace;
         if (object.stack)
         {
-            trace = StackFrame.parseToStackTrace(object.stack, context);
+            trace = StackTrace.parseToStackTrace(object.stack, context);
             trace = StackFrame.cleanStackTraceOfFirebug(trace);
 
             if (!trace)

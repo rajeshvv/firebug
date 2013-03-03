@@ -29,6 +29,11 @@ pref("extensions.firebug.hideDefaultInspector", false);
 pref("extensions.firebug.delayLoad", true);
 pref("extensions.firebug.enableOrion", true);
 
+// Remoting
+pref("extensions.firebug.serverHost", "localhost");
+pref("extensions.firebug.serverPort", 5999);
+pref("extensions.firebug.serverMode", false);
+
 // Command line
 pref("extensions.firebug.commandEditor", false);
 pref("extensions.firebug.alwaysShowCommandLine", false);
@@ -91,6 +96,7 @@ pref("extensions.firebug.scriptsFilter", "all");
 pref("extensions.firebug.replaceTabs", 4);
 pref("extensions.firebug.filterSystemURLs", true);
 pref("extensions.firebug.maxScriptLineLength", 10000);
+pref("extensions.firebug.breakOnExceptions", false);
 
 // Stack
 pref("extensions.firebug.omitObjectPathStack", false);

@@ -7,13 +7,12 @@ define([
     "firebug/chrome/reps",
     "firebug/lib/locale",
     "firebug/lib/wrapper",
-    "firebug/js/stackFrame",
+    "firebug/debugger/stack/stackFrame",
     "firebug/lib/dom",
     "firebug/lib/css",
     "firebug/lib/string",
-    "firebug/js/fbs",
 ],
-function(Obj, Firebug, Domplate, FirebugReps, Locale, Wrapper, StackFrame, Dom, Css, Str, FBS) {
+function(Obj, Firebug, Domplate, FirebugReps, Locale, Wrapper, StackFrame, Dom, Css, Str) {
 
 // ********************************************************************************************* //
 

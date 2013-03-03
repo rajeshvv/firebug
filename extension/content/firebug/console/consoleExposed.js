@@ -6,13 +6,15 @@ define([
     "firebug/lib/wrapper",
     "firebug/lib/url",
     "firebug/lib/string",
-    "firebug/js/stackFrame",
+    "firebug/debugger/stack/stackFrame",
+    "firebug/debugger/stack/stackTrace",
     "firebug/console/errors",
     "firebug/trace/debug",
     "firebug/console/console",
     "firebug/lib/options",
 ],
-function(FirebugReps, Locale, Wrapper, Url, Str, StackFrame, Errors, Debug, Console, Options) {
+function(FirebugReps, Locale, Wrapper, Url, Str, StackFrame, StackTrace,
+    Errors, Debug, Console, Options) {
 
 // ********************************************************************************************* //
 
@@ -326,7 +328,7 @@ function createFirebugConsole(context, win)
         {
             if (msg.stack)
             {
-                trace = StackFrame.parseToStackTrace(msg.stack, context);
+                trace = StackTrace.parseToStackTrace(msg.stack, context);
                 if (FBTrace.DBG_CONSOLE)
                     FBTrace.sysout("logAssert trace from msg.stack", trace);
             }
@@ -419,10 +421,6 @@ function createFirebugConsole(context, win)
                     continue;
 
                 if (Str.hasPrefix(frames[i].href, "resource:"))
-                    continue;
-
-                // firebug-service scope reached, in some cases the url starts with file://
-                if (frames[i].href.indexOf("modules/firebug-service.js") != -1)
                     continue;
 
                 // command line

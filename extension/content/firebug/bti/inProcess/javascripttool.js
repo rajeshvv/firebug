@@ -7,7 +7,7 @@ define([
     "firebug/lib/object",
     "firebug/firebug",
     "firebug/lib/tool",
-    "firebug/js/debugger",  // TODO firefox/jsdebugger
+    "firebug/debugger/debugger",  // TODO firefox/jsdebugger
     "arch/compilationunit"
 ],
 function initializeJavaScriptTool(Obj, Firebug, Tool, JSDebugger, CompilationUnit) {
@@ -160,7 +160,9 @@ JavaScriptTool.onActivateTool = function(toolname, active)
         {
             context.invalidatePanels('script');
         });
-        JavaScriptTool.asTool.setActive(active);
+
+        if (JavaScriptTool.asTool)
+            JavaScriptTool.asTool.setActive(active);
     }
 },
 

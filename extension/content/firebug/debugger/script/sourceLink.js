@@ -1,6 +1,9 @@
 /* See license.txt for terms of usage */
 
-define([], function() {
+define([
+    "firebug/lib/trace"
+],
+function(FBTrace) {
 
 // ********************************************************************************************* //
 // Constants
@@ -17,26 +20,29 @@ function SourceLink(url, line, type, object, instance, col)
 
 SourceLink.prototype =
 {
+    getURL: function()
+    {
+        return this.href;
+    },
+
     toString: function()
     {
-        return this.href+"@"+(this.line || '?');
+        return this.href + "@" + (this.line || "?");
     },
 
     toJSON: function() // until 3.1...
     {
-        return "{\"href\":\""+this.href+"\", "+
-            (this.line?("\"line\":"+this.line+","):"")+
-            (this.type?(" \"type\":\""+this.type+"\","):"")+
-                    "}";
+        return "{\"href\":\"" + this.href + "\", " +
+            (this.line ? ("\"line\":" + this.line + ","):"") +
+            (this.type ? (" \"type\":\"" + this.type + "\","):"") +
+            "}";
     }
 };
 
 // ********************************************************************************************* //
 // Registration
 
-return {
-    SourceLink: SourceLink
-};
+return SourceLink;
 
 // ********************************************************************************************* //
 });

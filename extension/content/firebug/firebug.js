@@ -23,9 +23,11 @@ define([
     "firebug/lib/http",
     "firebug/trace/traceListener",
     "firebug/console/commandLineExposed",
+    "firebug/debugger/clients/clientFactory",
 ],
 function(FBL, Obj, Firefox, ChromeFactory, Domplate, Options, Locale, Events,
-    Wrapper, Url, Css, Win, Str, Arr, Dom, Http, TraceListener, CommandLineExposed) {
+    Wrapper, Url, Css, Win, Str, Arr, Dom, Http, TraceListener, CommandLineExposed,
+    ClientFactory) {
 
 // ********************************************************************************************* //
 // Constants
@@ -62,6 +64,7 @@ var defaultRep = null;
 var defaultFuncRep = null;
 var menuItemControllers = [];
 var panelTypeMap = {};
+var tools = {};
 
 // ********************************************************************************************* //
 
@@ -673,6 +676,40 @@ window.Firebug =
         return CommandLineExposed.unregisterCommand(name);
     },
 
+    registerClient: function(gripClass, gripType)
+    {
+        return ClientFactory.registerClient(gripClass, gripType);
+    },
+
+    unregisterClient: function(gripClass)
+    {
+        return ClientFactory.unregisterClient(gripClass);
+    },
+
+    registerDefaultClient: function(gripType)
+    {
+        return ClientFactory.registerDefaultClient(gripType);
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // BTI Tools
+
+    registerTool: function(tool)
+    {
+        if (tool.toolName)
+            tools[tool.toolName] = tool;
+    },
+
+    unregisterTool: function(tool)
+    {
+        // TODO
+    },
+
+    getTool: function(name)
+    {
+        return tools[name];
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Options
 
@@ -1231,8 +1268,16 @@ window.Firebug =
     getRep: function(object, context)
     {
         var type = typeof(object);
-        if (type == 'object' && object instanceof String)
-            type = 'string';
+        if (type == "object" && object instanceof String)
+            type = "string";
+
+        // Support for objects with dynamic type info. Those objects are mostly remote
+        // objects coming from the back-end (server side). We can't use |instanceof|
+        // operand for those objects and so we need to provide type.
+        if (object && Obj.isFunction(object.getType))
+            type = object.getType();
+        else if (object && object["class"])
+            type = object["class"];
 
         for (var i = 0; i < reps.length; ++i)
         {
@@ -1248,12 +1293,13 @@ window.Firebug =
             }
             catch (exc)
             {
-                if (FBTrace.DBG_ERRORS)
+                // xxxHonza: should not be hidden, but there is so much of these logs...
+                /*if (FBTrace.DBG_ERRORS)
                 {
                     FBTrace.sysout("firebug.getRep FAILS: "+ exc, exc);
                     FBTrace.sysout("firebug.getRep reps["+i+"/"+reps.length+"]: "+
                         (typeof(reps[i])), reps[i]);
-                }
+                }*/
             }
         }
 
@@ -1515,8 +1561,18 @@ Firebug.Listener.prototype =
     {
         // if this.fbListeners is null, remove is being called with no add
         Arr.remove(this.fbListeners, listener);
+    },
+
+    dispatch: function(eventName, args)
+    {
+        if (this.fbListeners && this.fbListeners.length > 0)
+            Events.dispatch(this.fbListeners, eventName, args);
     }
 };
+
+// xxxHonza: the proper name should be EventSource (the opposite of a listener)
+
+Firebug.EventSource = Firebug.Listener;
 
 // ********************************************************************************************* //
 
