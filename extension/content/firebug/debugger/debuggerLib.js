@@ -10,7 +10,7 @@ function(Dom) {
 
 var Cu = Components.utils;
 
-var Debugger = {};
+var DebuggerLib = {};
 
 /**
  * Unwraps the value of a debuggee object.
@@ -21,7 +21,7 @@ var Debugger = {};
  *
  * @param {object} the unwrapped object
  */
-Debugger.unwrapDebuggeeObject = function(global, dglobal, obj)
+DebuggerLib.unwrapDebuggeeObject = function(global, dglobal, obj)
 {
     // If not a debuggee object, return it immediately.
     if (typeof obj !== "object")
@@ -45,7 +45,7 @@ Debugger.unwrapDebuggeeObject = function(global, dglobal, obj)
  *
  * @return {Debugger} The Debugger instance
  */
-Debugger.getInactiveDebuggerForContext = function(context)
+DebuggerLib.getInactiveDebuggerForContext = function(context)
 {
     var DebuggerClass;
     var scope = {};
@@ -62,7 +62,7 @@ Debugger.getInactiveDebuggerForContext = function(context)
     catch (exc)
     {
         if (FBTrace.DBG_ERROR)
-            FBTrace.sysout("Debugger.getInactiveDebuggerForContext; Debugger not found", exc);
+            FBTrace.sysout("DebuggerLib.getInactiveDebuggerForContext; Debugger not found", exc);
     }
     finally
     {
@@ -71,7 +71,7 @@ Debugger.getInactiveDebuggerForContext = function(context)
 
     // If the Debugger Class was not found, make this function no-op.
     if (!DebuggerClass)
-        Debugger.getInactiveDebuggerForContext = function() {};
+        DebuggerLib.getInactiveDebuggerForContext = function() {};
 
     var dbg = new DebuggerClass();
     dbg.enabled = false;
@@ -87,7 +87,7 @@ Debugger.getInactiveDebuggerForContext = function(context)
  *
  * @return {Debuggee Window} The debuggee global
  */
-Debugger.getDebuggeeGlobal = function(global, context)
+DebuggerLib.getDebuggeeGlobal = function(global, context)
 {
     var dglobal_key = "dglobal";
     var dbg;
@@ -95,7 +95,7 @@ Debugger.getDebuggeeGlobal = function(global, context)
     var dglobal = Dom.getMappedData(global.document, dglobal_key);
     if (!dglobal)
     {
-        dbg = Debugger.getInactiveDebuggerForContext(context);
+        dbg = DebuggerLib.getInactiveDebuggerForContext(context);
         if (!dbg)
             return;
 
@@ -109,7 +109,7 @@ Debugger.getDebuggeeGlobal = function(global, context)
 
 // ********************************************************************************************* //
 
-return Debugger;
+return DebuggerLib;
 
 // ********************************************************************************************* //
 

@@ -9,9 +9,9 @@ define([
     "firebug/firebug",
     "firebug/lib/wrapper",
     "firebug/lib/object",
-    "firebug/lib/debugger",
+    "firebug/debugger/debuggerLib",
 ],
-function(Firebug, Wrapper, Obj, Debugger) {
+function(Firebug, Wrapper, Obj, DebuggerLib) {
 "use strict";
 
 // ********************************************************************************************* //
@@ -138,7 +138,7 @@ var ClosureInspector =
     // Throws exceptions on error.
     getEnvironmentForObject: function(win, obj, context)
     {
-        var dbg = Debugger.getInactiveDebuggerForContext(context);
+        var dbg = DebuggerLib.getInactiveDebuggerForContext(context);
         if (!dbg)
             throw new Error("debugger not available");
 
@@ -154,7 +154,7 @@ var ClosureInspector =
 
         // Create a view of the object as seen from its own global - 'environment'
         // will not be accessible otherwise.
-        var dglobal = Debugger.getDebuggerGlobal(context, objGlobal);
+        var dglobal = DebuggerLib.getDebuggerGlobal(context, objGlobal);
 
         var dobj = dglobal.makeDebuggeeValue(obj);
 
@@ -217,7 +217,7 @@ var ClosureInspector =
         {
             env = this.getEnvironmentForObject(win, obj, context);
 
-            dglobal = Debugger.getDebuggerGlobal(context, win);
+            dglobal = DebuggerLib.getDebuggerGlobal(context, win);
         }
         catch (exc)
         {
@@ -256,7 +256,7 @@ var ClosureInspector =
                         if (self.isSimple(dval))
                             return dval;
                         var uwWin = Wrapper.getContentView(win);
-                        return Debugger.unwrapDebuggeeObject(uwWin, dglobal, dval);
+                        return DebuggerLib.unwrapDebuggeeObject(uwWin, dglobal, dval);
                     }
                     catch (exc)
                     {
@@ -306,7 +306,7 @@ var ClosureInspector =
             return;
         }
 
-        var dwin = Debugger.getDebuggerGlobal(context, win);
+        var dwin = DebuggerLib.getDebuggerGlobal(context, win);
 
         var scopeDataHolder = Object.create(ScopeProxy.prototype);
         scopeDataHolder.scope = scope;
@@ -350,7 +350,7 @@ var ClosureInspector =
                         if (self.isSimple(dval))
                             return dval;
                         var uwWin = Wrapper.getContentView(win);
-                        return Debugger.unwrapDebuggeeObject(uwWin, dwin, dval);
+                        return DebuggerLib.unwrapDebuggeeObject(uwWin, dwin, dval);
                     },
                     set: (dval === OptimizedAway ? undefined : function(value) {
                         dval = dwin.makeDebuggeeValue(value);

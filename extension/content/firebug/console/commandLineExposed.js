@@ -6,10 +6,10 @@ define([
     "firebug/lib/wrapper",
     "firebug/lib/events",
     "firebug/lib/dom",
-    "firebug/lib/debugger",
+    "firebug/debugger/debuggerLib",
     "firebug/lib/object",
 ],
-function(Wrapper, Events, Dom, Debugger, Obj) {
+function(Wrapper, Events, Dom, DebuggerLib, Obj) {
 "use strict";
 
 // ********************************************************************************************* //
@@ -201,7 +201,7 @@ function createFirebugCommandLine(context, win)
         var result;
         var resObj;
         var dbgCL;
-        var dglobal = Debugger.getDebuggeeGlobal(win, context);
+        var dglobal = DebuggerLib.getDebuggeeGlobal(win, context);
         dbgCL = dglobal.makeDebuggeeValue({});
 
         for (var i in commandLine)
@@ -230,7 +230,7 @@ function createFirebugCommandLine(context, win)
         }
 
         resObj = dglobal.evalInGlobalWithBindings(expr, dbgCL);
-        var unwrap = Debugger.unwrapDebuggeeObject.bind(null, win.wrappedJSObject, dglobal);
+        var unwrap = DebuggerLib.unwrapDebuggeeObject.bind(null, win.wrappedJSObject, dglobal);
 
         // In case of abnormal termination, as if by the "slow script" dialog box,
         // do not print anything in the console.
