@@ -6,9 +6,10 @@ define([
     "firebug/lib/wrapper",
     "firebug/lib/events",
     "firebug/lib/dom",
+    "firebug/lib/debugger",
     "firebug/lib/object",
 ],
-function(Wrapper, Events, Dom, Obj) {
+function(Wrapper, Events, Dom, Debugger, Obj) {
 "use strict";
 
 // ********************************************************************************************* //
@@ -116,7 +117,10 @@ function createFirebugCommandLine(context, win)
         if (prop in contentView)
             continue;
 
-        commandLine.__defineGetter__(prop, createVariableHandler(prop));
+        Object.defineProperty(commandLine, prop, {
+            get: createVariableHandler(prop),
+            enumerable: true,
+        });
         commandLine.__exposedProps__[prop] = "r";
     }
 
@@ -131,7 +135,10 @@ function createFirebugCommandLine(context, win)
 
         if (config.getter)
         {
-            commandLine.__defineGetter__(name, createVariableHandler(name));
+            Object.defineProperty(commandLine, name, {
+                get: createVariableHandler(name),
+                enumerable: true,
+            });
             commandLine.__exposedProps__[name] = "r";
         }
         else
@@ -188,90 +195,86 @@ function createFirebugCommandLine(context, win)
             FBTrace.sysout("commandLine.Exposed; did evaluate on " + expr);
     }
 
-    function getGlobal()
-    {
-        var dglobal= Dom.getMappedData(win.document, "commandline-dglobal");
-        var dbg, scope;
-        if (!dglobal)
-        {
-            scope = {};
-            Cu.import("resource://gre/modules/jsdebugger.jsm", scope);
-            scope.addDebuggerToGlobal(window);
-            dbg = new window.Debugger();
-            delete window.Debugger;
-            // should also be in the context of a Frame when a breakpoint is active
-            dglobal = dbg.addDebuggee(win);
-            dbg.removeDebuggee(win);
-            Dom.setMappedData(win.document, "commandline-dglobal", dglobal);
-        }
-        return dglobal;
-    }
-
     function evaluate(expr, origExpr)
     {
+        try{
         var result;
         var resObj;
-        var dbgCL = {};
-        var dglobal = getGlobal();
+        var dbgCL;
+        var dglobal = Debugger.getDebuggeeGlobal(win, context);
         dbgCL = dglobal.makeDebuggeeValue({});
+
         for (var i in commandLine)
         {
             if (commandLine.hasOwnProperty(i) && !win.wrappedJSObject.hasOwnProperty(i))
             {
+                if (i === "__exposedProps__")
+                    continue;
                 // xxxFlorent: FIXME I get an error when attempting to make dbgCL a debuggee object
                 //  and defining properties using dbgCL.defineProperty...
                 var descriptor = Object.getOwnPropertyDescriptor(commandLine, i);
                 if (descriptor.get)
-                    continue;
-                    /*dbgCL.defineProperty(i, dbgCL.makeDebuggeeValue({
-                        get: dbgCL.makeDebuggeeValue(descriptor.get)
-                    }));*/
-                else if (typeof commandLine[i] === "function")
+                {
+                    /*Firebug.Console.logFormatted(["i = ", i]);
+                    dbgCL.defineProperty(i, {
+                        get: dbgCL.makeDebuggeeValue(descriptor.get),
+                        configurable: true
+                    });*/
+                    /*Object.defineProperty(propertyBindings, i, {
+                        get: function() commandLine[i]
+                    });*/
+                }
+                else
                     dbgCL[i] = dglobal.makeDebuggeeValue(commandLine[i]);
             }
         }
 
-        // xxxFlorent: why actually evalInGlobalWithBindings evaluates as if 
-        //      within the current frame?
-        //      for example:
-        //          1. set a breakpoint within a function
-        //          2. trigger that breakpoint
-        //          3. type "this" in the Command Line
         resObj = dglobal.evalInGlobalWithBindings(expr, dbgCL);
-        var unwrap = Obj.unwrapDebuggeeValue.bind(null, win.wrappedJSObject, dglobal);
+        var unwrap = Debugger.unwrapDebuggeeObject.bind(null, win.wrappedJSObject, dglobal);
 
-        // case of abnormal termination, as if by the "slow script" dialog box
+        // In case of abnormal termination, as if by the "slow script" dialog box,
+        // do not print anything in the console.
         if (!resObj)
+        {
             return;
-        else if (resObj.hasOwnProperty("return"))
+        }
+
+        if (resObj.hasOwnProperty("return"))
+        {
             result = unwrap(resObj.return);
+        }
         else if (resObj.hasOwnProperty("yield"))
+        {
             result = unwrap(resObj.yield);
+        }
         else if (resObj.hasOwnProperty("throw"))
         {
-            result = unwrap(resObj.throw);
+            // Change source and line number of exeptions from commandline code
+            // create new error since properties of nsIXPCException are not modifiable.
+            var exc = unwrap(resObj.throw);
 
-            // Lie and show the pre-transformed expression instead.
-            // xxxFlorent: localize?
-            result.fileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE:" +
-                " */" + encodeURIComponent("\n"+origExpr);
-            result.source = expr;
-            result.stack = null;
+            var errMessage;
+            if (typeof exc.message === "string")
+                errMessage = exc.message.replace(/__fb_scopedVars\(/g, "<get closure>(");
 
-            // change the line number to take into account the line of comment in the filename
-            result.lineNumber++;
+            var errFileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE: * /"+
+                encodeURIComponent("\n"+origExpr);
 
-            // correct the message to replace __fb_scopedVars with "%" (Closure Inspector):
-            if (typeof result.message === "string")
-                result.message = result.message.replace(/__fb_scopedVars\(/g, "<get closure>(");
+            var result = Obj.extend(exc, {
+                fileName: errFileName,
+                lineNumber: exc.lineNumber+1,
+                message: errMessage
+            });
+
+            // xxxFlorent: I admit that I don't know how clean it is...
+            result.__proto__ = Error.prototype;
 
             notifyFirebug([result], "evaluateError", "firebugAppendConsole");
             return;
         }
 
-        // See Issue 5221
-        //var result = FirebugEvaluate(expr, contentView);
         notifyFirebug([result], "evaluated", "firebugAppendConsole");
+        } catch(ex){notifyFirebug([ex], "evaluateError", "firebugAppendConsole");}
     }
 
     function notifyFirebug(objs, methodName, eventID)

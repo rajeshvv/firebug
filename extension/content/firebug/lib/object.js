@@ -223,22 +223,6 @@ Obj.isNonNativeGetter = function(obj, propName)
     return true;
 };
 
-Obj.unwrapDebuggeeValue = function(global, dglobal, obj)
-{
-    // if not a debuggee value, return it immediately:
-    if (typeof obj !== "object")
-        return obj;
-
-    // define a new property to get the debuggee value:
-    dglobal.defineProperty("_firebugUnwrappedDebuggerObject", {
-        value: obj,
-        writable: true,
-        configurable: true
-    });
-
-    // get the debuggee value using the property through the unwrapped global object:
-    return global._firebugUnwrappedDebuggerObject;
-};
 // ********************************************************************************************* //
 
 return Obj;

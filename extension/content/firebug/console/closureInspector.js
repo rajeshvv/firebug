@@ -9,8 +9,9 @@ define([
     "firebug/firebug",
     "firebug/lib/wrapper",
     "firebug/lib/object",
+    "firebug/lib/debugger",
 ],
-function(Firebug, Wrapper, Obj) {
+function(Firebug, Wrapper, Obj, Debugger) {
 "use strict";
 
 // ********************************************************************************************* //
@@ -26,60 +27,6 @@ Object.freeze(OptimizedAway);
 
 var ClosureInspector =
 {
-    hasInit: false,
-    Debugger: null,
-    debuggeeCache: new WeakMap(),
-
-    getInactiveDebuggerForContext: function(context)
-    {
-        if (context.inactiveDebugger)
-            return context.inactiveDebugger;
-
-        if (!this.hasInit)
-        {
-            this.hasInit = true;
-            try
-            {
-                Cu.import("resource://gre/modules/jsdebugger.jsm");
-                window.addDebuggerToGlobal(window);
-                this.Debugger = window.Debugger;
-            }
-            catch (exc)
-            {
-                if (FBTrace.DBG_COMMANDLINE)
-                    FBTrace.sysout("ClosureInspector; Debugger not found", exc);
-            }
-        }
-        if (!this.Debugger)
-            return;
-
-        var dbg = new this.Debugger();
-        dbg.enabled = false;
-        context.inactiveDebugger = dbg;
-        return dbg;
-    },
-
-    getDebuggeeObject: function(context, global)
-    {
-        var dbg = this.getInactiveDebuggerForContext(context);
-
-        // Because (outer) windows persist between reloads, use their documents
-        // as keys into the cache instead.
-        var cacheKey = global.document || global;
-
-        var dglobal = this.debuggeeCache.get(cacheKey);
-        if (dglobal)
-            return dglobal;
-
-        // Note: for no purposes is it actually important that the global is
-        // held as a debuggee; it just makes things slower.
-        dglobal = dbg.addDebuggee(global);
-        dbg.removeDebuggee(global);
-
-        this.debuggeeCache.set(cacheKey, dglobal);
-        return dglobal;
-    },
-
     getVariableOrOptimizedAway: function(scope, name)
     {
         try
@@ -119,8 +66,6 @@ var ClosureInspector =
     {
         return (typeof dobj !== "object" || dobj === OptimizedAway);
     },
-
-    unwrap: Obj.unwrapDebuggeeValue,
 
     isScopeInteresting: function(scope)
     {
@@ -193,7 +138,7 @@ var ClosureInspector =
     // Throws exceptions on error.
     getEnvironmentForObject: function(win, obj, context)
     {
-        var dbg = this.getInactiveDebuggerForContext(context);
+        var dbg = Debugger.getInactiveDebuggerForContext(context);
         if (!dbg)
             throw new Error("debugger not available");
 
@@ -209,7 +154,7 @@ var ClosureInspector =
 
         // Create a view of the object as seen from its own global - 'environment'
         // will not be accessible otherwise.
-        var dglobal = this.getDebuggeeObject(context, objGlobal);
+        var dglobal = Debugger.getDebuggerGlobal(context, objGlobal);
 
         var dobj = dglobal.makeDebuggeeValue(obj);
 
@@ -272,7 +217,7 @@ var ClosureInspector =
         {
             env = this.getEnvironmentForObject(win, obj, context);
 
-            dglobal = this.getDebuggeeObject(context, win);
+            dglobal = Debugger.getDebuggerGlobal(context, win);
         }
         catch (exc)
         {
@@ -311,7 +256,7 @@ var ClosureInspector =
                         if (self.isSimple(dval))
                             return dval;
                         var uwWin = Wrapper.getContentView(win);
-                        return self.unwrap(uwWin, dglobal, dval);
+                        return Debugger.unwrapDebuggeeObject(uwWin, dglobal, dval);
                     }
                     catch (exc)
                     {
@@ -361,7 +306,7 @@ var ClosureInspector =
             return;
         }
 
-        var dwin = this.getDebuggeeObject(context, win);
+        var dwin = Debugger.getDebuggerGlobal(context, win);
 
         var scopeDataHolder = Object.create(ScopeProxy.prototype);
         scopeDataHolder.scope = scope;
@@ -405,7 +350,7 @@ var ClosureInspector =
                         if (self.isSimple(dval))
                             return dval;
                         var uwWin = Wrapper.getContentView(win);
-                        return self.unwrap(uwWin, dwin, dval);
+                        return Debugger.unwrapDebuggeeObject(uwWin, dwin, dval);
                     },
                     set: (dval === OptimizedAway ? undefined : function(value) {
                         dval = dwin.makeDebuggeeValue(value);
