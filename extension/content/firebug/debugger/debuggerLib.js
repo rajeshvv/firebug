@@ -9,19 +9,21 @@ function(Dom) {
 // Constants
 
 var Cu = Components.utils;
+var dglobalWeakMap = new WeakMap();
+var debuggerSingleton = null;
 
 var DebuggerLib = {};
 
 /**
  * Unwraps the value of a debuggee object.
  *
+ * @param obj {Debugger.Object} The debuggee object to unwrap
  * @param global {Window} The unwrapped global (window)
  * @param dglobal {Debugger.Object} The debuggee global object
- * @param obj {Debugger.Object} The debuggee object to unwrap
  *
- * @param {object} the unwrapped object
+ * @return {object} the unwrapped object
  */
-DebuggerLib.unwrapDebuggeeObject = function(global, dglobal, obj)
+DebuggerLib.unwrapDebuggeeValue = function(obj, global, dglobal)
 {
     // If not a debuggee object, return it immediately.
     if (typeof obj !== "object")
@@ -91,8 +93,7 @@ DebuggerLib.getDebuggeeGlobal = function(global, context)
 {
     var dglobal_key = "dglobal";
     var dbg;
-    // xxxFlorent: could the line below be replaced with: var dglobal = context.debuggeeGlobal?
-    var dglobal = Dom.getMappedData(global.document, dglobal_key);
+    var dglobal = dglobalWeakMap.get(global);
     if (!dglobal)
     {
         dbg = DebuggerLib.getInactiveDebuggerForContext(context);
@@ -101,7 +102,7 @@ DebuggerLib.getDebuggeeGlobal = function(global, context)
 
         dglobal = dbg.addDebuggee(global);
         dbg.removeDebuggee(global);
-        Dom.setMappedData(global.document, dglobal_key, dglobal);
+        dglobalWeakMap.set(global, dglobal);
     }
     return dglobal;
 };

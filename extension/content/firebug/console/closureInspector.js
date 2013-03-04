@@ -256,7 +256,7 @@ var ClosureInspector =
                         if (self.isSimple(dval))
                             return dval;
                         var uwWin = Wrapper.getContentView(win);
-                        return DebuggerLib.unwrapDebuggeeObject(uwWin, dglobal, dval);
+                        return DebuggerLib.unwrapDebuggeeValue(dval, uwWin, dglobal);
                     }
                     catch (exc)
                     {
@@ -350,7 +350,7 @@ var ClosureInspector =
                         if (self.isSimple(dval))
                             return dval;
                         var uwWin = Wrapper.getContentView(win);
-                        return DebuggerLib.unwrapDebuggeeObject(uwWin, dwin, dval);
+                        return DebuggerLib.unwrapDebuggeeValue(dval, uwWin, dwin);
                     },
                     set: (dval === OptimizedAway ? undefined : function(value) {
                         dval = dwin.makeDebuggeeValue(value);

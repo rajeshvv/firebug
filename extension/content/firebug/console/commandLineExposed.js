@@ -197,6 +197,7 @@ function createFirebugCommandLine(context, win)
 
     function evaluate(expr, origExpr)
     {
+        // xxxFlorent: TODO remove that try-catch as soon as the work is finished
         try{
         var result;
         var resObj;
@@ -204,13 +205,13 @@ function createFirebugCommandLine(context, win)
         var dglobal = DebuggerLib.getDebuggeeGlobal(win, context);
         dbgCL = dglobal.makeDebuggeeValue({});
 
+        // xxxFlorent: TODO make commandLine a debuggee object from the beginning, 
+        // so we get rid of that loop
         for (var i in commandLine)
         {
-            if (commandLine.hasOwnProperty(i) && !win.wrappedJSObject.hasOwnProperty(i))
+            if (commandLine.hasOwnProperty(i) && !win.wrappedJSObject.hasOwnProperty(i) &&
+                i !== "__exposedProps__")
             {
-                if (i === "__exposedProps__")
-                    continue;
-
                 var descriptor = Object.getOwnPropertyDescriptor(commandLine, i);
                 if (descriptor.get && props.indexOf(i) === -1)
                 {
@@ -230,7 +231,11 @@ function createFirebugCommandLine(context, win)
         }
 
         resObj = dglobal.evalInGlobalWithBindings(expr, dbgCL);
-        var unwrap = DebuggerLib.unwrapDebuggeeObject.bind(null, win.wrappedJSObject, dglobal);
+
+        var unwrap = function(obj)
+        {
+            return DebuggerLib.unwrapDebuggeeValue(obj, contentView, dglobal);
+        };
 
         // In case of abnormal termination, as if by the "slow script" dialog box,
         // do not print anything in the console.
@@ -242,7 +247,7 @@ function createFirebugCommandLine(context, win)
         if (resObj.hasOwnProperty("return"))
         {
             result = unwrap(resObj.return);
-            if (resObj.return.action)
+            if (resObj.return && resObj.return.action)
             {
                 resObj.return.action();
                 // Do not print anything in the console in case of getter commands.
@@ -255,25 +260,30 @@ function createFirebugCommandLine(context, win)
         }
         else if (resObj.hasOwnProperty("throw"))
         {
-            // Change source and line number of exeptions from commandline code
+            // Change source and line number of exceptions from commandline code
             // create new error since properties of nsIXPCException are not modifiable.
+            // Example of code raising nsIXPCException: `alert()` (without arguments)
+
+            // xxxFlorent: TODO: take the code in master that is still necessary
             var exc = unwrap(resObj.throw);
+            var isXPCException = (exc.filename !== undefined);
 
             var errMessage;
             if (typeof exc.message === "string")
                 errMessage = exc.message.replace(/__fb_scopedVars\(/g, "<get closure>(");
 
-            var errFileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE: * /"+
+            // xxxFlorent: needs to discuss about keeping that
+            var errFileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE: */"+
                 encodeURIComponent("\n"+origExpr);
 
-            var result = Obj.extend(exc, {
-                fileName: errFileName,
-                lineNumber: exc.lineNumber+1,
-                message: errMessage
-            });
+            var result = new Error();
 
-            // xxxFlorent: I admit that I don't know how clean it is...
-            result.__proto__ = Error.prototype;
+            for (var i in exc)
+                result[i] = exc[i];
+
+            result.fileName = errFileName;
+            result.lineNumber = exc.lineNumber;
+            result.message = errMessage;
 
             notifyFirebug([result], "evaluateError", "firebugAppendConsole");
             return;
