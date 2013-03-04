@@ -210,19 +210,19 @@ function createFirebugCommandLine(context, win)
             {
                 if (i === "__exposedProps__")
                     continue;
-                // xxxFlorent: FIXME I get an error when attempting to make dbgCL a debuggee object
-                //  and defining properties using dbgCL.defineProperty...
+
                 var descriptor = Object.getOwnPropertyDescriptor(commandLine, i);
-                if (descriptor.get)
+                if (descriptor.get && props.indexOf(i) === -1)
                 {
-                    /*Firebug.Console.logFormatted(["i = ", i]);
-                    dbgCL.defineProperty(i, {
-                        get: dbgCL.makeDebuggeeValue(descriptor.get),
-                        configurable: true
-                    });*/
-                    /*Object.defineProperty(propertyBindings, i, {
-                        get: function() commandLine[i]
-                    });*/
+                    // We cannot add getters in the binding object, so we add an `action` method
+                    // that is triggered when the object representing the command is returned.
+                    // It is not exposed to the content view (so it should be left unwrapped).
+                    dbgCL[i] = dglobal.makeDebuggeeValue({});
+                    // xxxFlorent: [ES6-LET]
+                    dbgCL[i].action = (function(command)
+                    {
+                        return commandLine[command];
+                    }).bind(null, i);
                 }
                 else
                     dbgCL[i] = dglobal.makeDebuggeeValue(commandLine[i]);
@@ -242,6 +242,12 @@ function createFirebugCommandLine(context, win)
         if (resObj.hasOwnProperty("return"))
         {
             result = unwrap(resObj.return);
+            if (resObj.return.action)
+            {
+                resObj.return.action();
+                // Do not print anything in the console in case of getter commands.
+                return;
+            }
         }
         else if (resObj.hasOwnProperty("yield"))
         {
@@ -274,7 +280,7 @@ function createFirebugCommandLine(context, win)
         }
 
         notifyFirebug([result], "evaluated", "firebugAppendConsole");
-        } catch(ex){notifyFirebug([ex], "evaluateError", "firebugAppendConsole");}
+        } catch(ex){alert(ex.message); FBTrace.sysout(ex.stack); notifyFirebug([ex], "evaluateError", "firebugAppendConsole");}
     }
 
     function notifyFirebug(objs, methodName, eventID)
