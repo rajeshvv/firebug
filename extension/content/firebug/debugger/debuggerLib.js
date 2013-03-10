@@ -26,8 +26,11 @@ var DebuggerLib = {};
 DebuggerLib.unwrapDebuggeeValue = function(obj, global, dglobal)
 {
     // If not a debuggee object, return it immediately.
-    if (typeof obj !== "object")
+    if (typeof obj !== "object" || obj === null)
         return obj;
+
+    if (obj.unsafeDereference)
+        return obj.unsafeDereference();
 
     // Define a new property to get the debuggee value.
     dglobal.defineProperty("_firebugUnwrappedDebuggerObject", {
@@ -41,13 +44,42 @@ DebuggerLib.unwrapDebuggeeValue = function(obj, global, dglobal)
 };
 
 /**
+ * Gets or creates the debuggee global for the given global object
+ *
+ * @param {Window} global The global object
+ * @param {*} context The Firebug context
+ *
+ * @return {Debuggee Window} The debuggee global
+ */
+DebuggerLib.getDebuggeeGlobal = function(global, context)
+{
+    var dglobal_key = "dglobal";
+    var dbg;
+    var dglobal = dglobalWeakMap.get(global);
+    if (!dglobal)
+    {
+        dbg = getInactiveDebuggerForContext(context);
+        if (!dbg)
+            return;
+
+        dglobal = dbg.addDebuggee(global);
+        dbg.removeDebuggee(global);
+        dglobalWeakMap.set(global, dglobal);
+    }
+    return dglobal;
+};
+
+// ********************************************************************************************* //
+// Local helpers
+
+/**
  * Gets or creates the Inactive Debugger instance for the given context (singleton).
  *
  * @param context {*}
  *
  * @return {Debugger} The Debugger instance
  */
-DebuggerLib.getInactiveDebuggerForContext = function(context)
+var getInactiveDebuggerForContext = function(context)
 {
     var DebuggerClass;
     var scope = {};
@@ -66,45 +98,15 @@ DebuggerLib.getInactiveDebuggerForContext = function(context)
         if (FBTrace.DBG_ERROR)
             FBTrace.sysout("DebuggerLib.getInactiveDebuggerForContext; Debugger not found", exc);
     }
-    finally
-    {
-        delete window.Debugger;
-    }
 
     // If the Debugger Class was not found, make this function no-op.
     if (!DebuggerClass)
-        DebuggerLib.getInactiveDebuggerForContext = function() {};
+        getInactiveDebuggerForContext = function() {};
 
     var dbg = new DebuggerClass();
     dbg.enabled = false;
     context.inactiveDebugger = dbg;
     return dbg;
-};
-
-/**
- * Gets or creates the debuggee global for the given global object
- *
- * @param {Window} global The global object
- * @param {*} context The Firebug context
- *
- * @return {Debuggee Window} The debuggee global
- */
-DebuggerLib.getDebuggeeGlobal = function(global, context)
-{
-    var dglobal_key = "dglobal";
-    var dbg;
-    var dglobal = dglobalWeakMap.get(global);
-    if (!dglobal)
-    {
-        dbg = DebuggerLib.getInactiveDebuggerForContext(context);
-        if (!dbg)
-            return;
-
-        dglobal = dbg.addDebuggee(global);
-        dbg.removeDebuggee(global);
-        dglobalWeakMap.set(global, dglobal);
-    }
-    return dglobal;
 };
 
 

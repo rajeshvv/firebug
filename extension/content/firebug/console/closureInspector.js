@@ -138,10 +138,6 @@ var ClosureInspector =
     // Throws exceptions on error.
     getEnvironmentForObject: function(win, obj, context)
     {
-        var dbg = DebuggerLib.getInactiveDebuggerForContext(context);
-        if (!dbg)
-            throw new Error("debugger not available");
-
         if (!obj || !(typeof obj === "object" || typeof obj === "function"))
             throw new TypeError("can't get scope of non-object");
 
