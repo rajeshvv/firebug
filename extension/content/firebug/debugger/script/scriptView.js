@@ -344,6 +344,41 @@ ScriptView.prototype = Obj.extend(new Firebug.EventSource(),
         });
     },
 
+    toggleBreakpoint: function(lineIndex)
+    {
+        var lineStart = this.editor.getLineStart(lineIndex);
+        var lineEnd = this.editor.getLineEnd(lineIndex);
+        var annotations = this.editor._getAnnotationsByType("breakpoint", lineStart, lineEnd);
+        
+        if (annotations.length > 0)
+        {
+            this.editor.removeBreakpoint(lineIndex);
+        }
+        else
+        {
+            this.initializeBreakpoint(lineIndex);
+        }
+    },
+
+    initializeBreakpoint: function(lineIndex, condition)
+    {
+        var lineStart = this.editor.getLineStart(lineIndex);
+        var lineEnd = this.editor.getLineEnd(lineIndex);
+        var annotation = {
+            type: "orion.annotation.breakpoint",
+            start: lineStart,
+            end: lineEnd,
+            style: {styleClass: "annotation breakpointLoading"},
+            html: "<div class='annotationHTML'></div>",
+            overviewStyle: {styleClass: "annotationOverview"},
+            rangeStyle: {styleClass: "annotationRange"}
+        };
+
+        this.editor._annotationModel.addAnnotation(annotation);
+
+        this.dispatch("onBreakpointInitialized", [lineIndex, condition]);
+    },
+
     updateBreakpoint: function(bp)
     {
         var annotation = {
@@ -377,19 +412,18 @@ ScriptView.prototype = Obj.extend(new Firebug.EventSource(),
         if (!this.initialized)
             return 0;
 
-        return this.editor.getTopIndex();
+        return this.editor.getTopIndex() + 1;
     },
 
     scrollToLineAsync: function(lineNo, options)
     {
+        Trace.sysout("scriptView.scrollToLineAsync; " + lineNo, options);
+
         if (!this.initialized)
         {
             this.defaultLine = lineNo;
             return;
         }
-
-        // Convert to index based.
-        lineNo = lineNo - 1;
 
         // Scroll the content so the debug-location (execution line) is visible
         // xxxHonza: must be done asynchronously otherwise doesn't work :-(
@@ -403,8 +437,6 @@ ScriptView.prototype = Obj.extend(new Firebug.EventSource(),
     {
         options = options || {};
 
-        Trace.sysout("scriptView.scrollToLine; " + line, options);
-
         var editorHeight = this.editor._view.getClientArea().height;
         var lineHeight = this.editor._view.getLineHeight();
         var linesVisible = Math.floor(editorHeight/lineHeight);
@@ -412,13 +444,31 @@ ScriptView.prototype = Obj.extend(new Firebug.EventSource(),
         var firstVisible = this.editor.getTopIndex();
         var lastVisible = this.editor._view.getBottomIndex(true);
 
-        // Calculate center line
-        var topIndex = Math.max(line - halfVisible, 0);
-        topIndex = Math.min(topIndex, this.editor.getLineCount());
+        // Convert to index based.
+        line = line - 1;
 
-        // If the target line is in view, keep the top index
-        if (line <= lastVisible && line >= firstVisible)
-            topIndex = firstVisible;
+        var topIndex;
+        if (options.scrollTo == "top")
+        {
+            topIndex = line;
+        }
+        else
+        {
+            // Calculate center line
+            topIndex = Math.max(line - halfVisible, 0);
+            topIndex = Math.min(topIndex, this.editor.getLineCount());
+
+            // If the target line is in view, keep the top index
+            if (line <= lastVisible && line >= firstVisible)
+            {
+                Trace.sysout("scriptView.scrollToLine; adjust line: " + line +
+                    ", firstVisible: " + firstVisible + ", lastVisible: " + lastVisible);
+
+                topIndex = firstVisible;
+            }
+        }
+
+        Trace.sysout("scriptView.scrollToLine; setTopIndex " + topIndex, options);
 
         this.editor.setTopIndex(topIndex);
 
@@ -445,7 +495,8 @@ ScriptView.prototype = Obj.extend(new Firebug.EventSource(),
         if (!this.initialized)
             return;
 
-        this.editor.setDebugLocation(line);
+        if (this.editor)
+            this.editor.setDebugLocation(line);
 
         // If the debug location is being removed (line == -1) do not scroll.
         if (line > 0)
@@ -459,7 +510,10 @@ ScriptView.prototype = Obj.extend(new Firebug.EventSource(),
         // If there is an update in progress cancel it. E.g. removeDebugLocation should not
         // be called if scrollToLine is about to execute.
         if (this.updateTimer)
+        {
+            Trace.sysout("scriptView.asyncUpdate; Cancel existing update");
             clearTimeout(this.updateTimer);
+        }
 
         var self = this;
         this.updateTimer = setTimeout(function()
@@ -493,15 +547,14 @@ ScriptView.prototype = Obj.extend(new Firebug.EventSource(),
     {
         Trace.sysout("scriptView.linesRulerClick; " + lineIndex, event);
 
-        this.editor._annotationRulerClick.call(this.editor, lineIndex, event);
+        this.toggleBreakpoint(lineIndex);
     },
 
     annotationRulerClick: function(lineIndex, event)
     {
         Trace.sysout("scriptView.annotationRulerClick; " + lineIndex, event);
 
-        // Clicking on a line number also toggles breakpoint.
-        this.editor._annotationRulerClick.call(this.editor, lineIndex, event);
+        this.toggleBreakpoint(lineIndex);
     },
 
     bodyMouseUp: function(event)
