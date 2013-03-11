@@ -8,18 +8,19 @@ define([
     "firebug/lib/dom",
     "firebug/debugger/debuggerLib",
     "firebug/lib/object",
-    "firebug/lib/xpath",
-    "firebug/lib/array",
-    "firebug/lib/locale",
-    "firebug/lib/system",
+    "firebug/console/commandLineAPI",
 ],
-function(Wrapper, Events, Dom, DebuggerLib, Obj, Xpath, Arr, Locale, System) {
+function(Wrapper, Events, Dom, DebuggerLib, Obj, CommandLineAPI) {
 "use strict";
 
 // ********************************************************************************************* //
 // Constants
 
 const Cu = Components.utils;
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+var commandLineCache = new WeakMap();
 
 // ********************************************************************************************* //
 // Command Line APIs
@@ -37,249 +38,6 @@ var props = ["$0", "$1"];
 
 // Registered commands, name -> config object.
 var userCommands = Object.create(null);
-
-// ********************************************************************************************* //
-// Command Line API
-
-/**
- * These functions will be called in the extension like this:
- *
- * subHandler.apply(api, userObjects);
- *
- * Where subHandler is one of the entries below, api is this object and userObjects
- * are entries in an array we created in the web page.
- */
-function getCommandLineAPI(context, console)
-{
-    var commands = Object.create(null);
-    // returns unwrapped elements from the page
-    commands.$ = function(selector, start)
-    {
-        if (start && start.querySelector && (
-            start.nodeType === Node.ELEMENT_NODE ||
-            start.nodeType === Node.DOCUMENT_NODE ||
-            start.nodeType === Node.DOCUMENT_FRAGMENT_NODE))
-        {
-            return start.querySelector(selector);
-        }
-
-        var result = context.baseWindow.document.querySelector(selector);
-        if (result === null && (selector || "")[0] !== "#")
-        {
-            if (context.baseWindow.document.getElementById(selector))
-            {
-                // This should be removed in the next minor (non-bugfix) version
-
-                // xxxFlorent: should we still keep that now?
-                var msg = Locale.$STRF("warning.dollar_change", [selector]);
-                Firebug.Console.log(msg, context, "warn");
-                result = null;
-            }
-        }
-
-        return result;
-    };
-
-    // returns unwrapped elements from the page
-    commands.$$ = function(selector, start)
-    {
-        var result;
-
-        if (start && start.querySelectorAll && (
-            start.nodeType === Node.ELEMENT_NODE ||
-            start.nodeType === Node.DOCUMENT_NODE ||
-            start.nodeType === Node.DOCUMENT_FRAGMENT_NODE))
-        {
-            result = start.querySelectorAll(selector);
-        }
-        else
-        {
-            result = context.baseWindow.document.querySelectorAll(selector);
-        }
-
-        return Arr.cloneArray(result);
-    };
-
-    // returns unwrapped elements from the page
-    commands.$x = function(xpath, contextNode, resultType)
-    {
-        var XPathResultType = XPathResult.ANY_TYPE;
-
-        switch (resultType)
-        {
-            case "number":
-                XPathResultType = XPathResult.NUMBER_TYPE;
-                break;
-
-            case "string":
-                XPathResultType = XPathResult.STRING_TYPE;
-                break;
-
-            case "bool":
-                XPathResultType = XPathResult.BOOLEAN_TYPE;
-                break;
-
-            case "node":
-                XPathResultType = XPathResult.FIRST_ORDERED_NODE_TYPE;
-                break;
-
-            case "nodes":
-                XPathResultType = XPathResult.UNORDERED_NODE_ITERATOR_TYPE;
-                break;
-        }
-
-        var doc = Wrapper.unwrapObject(context.baseWindow.document);
-        return Xpath.evaluateXPath(doc, xpath, contextNode, XPathResultType);
-    };
-
-    // values from the extension space
-    commands.$n = function(index)
-    {
-        var htmlPanel = context.getPanel("html", true);
-        if (!htmlPanel)
-            return null;
-
-        if (index < 0 || index >= htmlPanel.inspectorHistory.length)
-            return null;
-
-        var node = htmlPanel.inspectorHistory[index];
-        if (!node)
-            return node;
-
-        return Wrapper.unwrapObject(node);
-    };
-
-    commands.cd = function(object)
-    {
-        if (!(object instanceof window.Window))
-            throw new Error("Object must be a window.");
-
-        // Make sure the command line is attached into the target iframe.
-        var consoleReady = Firebug.Console.isReadyElsePreparing(context, object);
-        if (FBTrace.DBG_COMMANDLINE)
-            FBTrace.sysout("commandLine.cd; console ready: " + consoleReady);
-
-        // The window object parameter uses XPCSafeJSObjectWrapper, but we need XPCNativeWrapper
-        // So, look within all registered consoleHandlers for
-        // the same window (from tabWatcher) that uses uses XPCNativeWrapper (operator "==" works).
-        var entry = Firebug.Console.injector.getConsoleHandler(context, object);
-        if (entry)
-            context.baseWindow = entry.win;
-
-        var format = Locale.$STR("commandline.CurrentWindow") + " %o";
-        Firebug.Console.logFormatted([format, context.baseWindow], context, "info");
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    // no web page interaction
-    commands.clear = function()
-    {
-        Firebug.Console.clear(context);
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    // no web page interaction
-    commands.inspect = function(obj, panelName)
-    {
-        Firebug.chrome.select(obj, panelName);
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.keys = function(o)
-    {
-        // the object is from the page, unwrapped
-        return Arr.keys(o);
-    };
-
-    commands.values = function(o)
-    {
-        // the object is from the page, unwrapped
-        return Arr.values(o);
-    };
-
-    commands.debug = function(fn)
-    {
-        Firebug.Debugger.monitorFunction(fn, "debug");
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.undebug = function(fn)
-    {
-        Firebug.Debugger.unmonitorFunction(fn, "debug");
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.monitor = function(fn)
-    {
-        Firebug.Debugger.monitorFunction(fn, "monitor");
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.unmonitor = function(fn)
-    {
-        Firebug.Debugger.unmonitorFunction(fn, "monitor");
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.traceAll = function()
-    {
-        // See issue 6220
-        Firebug.Console.log(Locale.$STR("commandline.MethodDisabled"));
-        //Firebug.Debugger.traceAll(Firebug.currentContext);
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.untraceAll = function()
-    {
-        // See issue 6220
-        Firebug.Console.log(Locale.$STR("commandline.MethodDisabled"));
-        //Firebug.Debugger.untraceAll(Firebug.currentContext);
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.traceCalls = function(fn)
-    {
-        // See issue 6220
-        Firebug.Console.log(Locale.$STR("commandline.MethodDisabled"));
-        //Firebug.Debugger.traceCalls(Firebug.currentContext, fn);
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.untraceCalls = function(fn)
-    {
-        // See issue 6220
-        Firebug.Console.log(Locale.$STR("commandline.MethodDisabled"));
-        //Firebug.Debugger.untraceCalls(Firebug.currentContext, fn);
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.copy = function(x)
-    {
-        System.copyToClipboard(x);
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    // xxxHonza: removed from 1.10 (issue 5599)
-    /*commands.memoryProfile = function(title)
-    {
-        Firebug.MemoryProfiler.start(context, title);
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };
-
-    commands.memoryProfileEnd = function()
-    {
-        Firebug.MemoryProfiler.stop(context);
-        return Firebug.Console.getDefaultReturnValue(context.window);
-    };*/
-
-    // Register shortcut.
-    consoleShortcuts.forEach(function(name)
-    {
-        commands[name] = console[name];
-    });
-
-    return commands;
-}
 
 // ********************************************************************************************* //
 // Command Line Implementation
@@ -303,7 +61,7 @@ function createFirebugCommandLine(context, win)
         return null;
     }
 
-    var commandLine = Dom.getMappedData(contentView.document, "commandLine");
+    var commandLine = commandLineCache.get(win.document);
     if (commandLine)
         return commandLine;
 
@@ -318,7 +76,7 @@ function createFirebugCommandLine(context, win)
 
     var console = Firebug.ConsoleExposed.createFirebugConsole(context, win);
     // The command line API instance:
-    var commands = getCommandLineAPI(context, console);
+    var commands = CommandLineAPI.getCommandLineAPI(context, console);
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Exposed Properties
@@ -358,8 +116,6 @@ function createFirebugCommandLine(context, win)
             }
         };
     }
-    // xxxFlorent: TODO remove that when the work is done
-    try{
 
     var command;
     // Define command line methods
@@ -368,6 +124,13 @@ function createFirebugCommandLine(context, win)
         command = commands[commandName];
         commandLine[commandName] = createCommandHandler(command);
     }
+
+    // Register shortcut.
+    consoleShortcuts.forEach(function(name)
+    {
+        var command = console[name].bind(console);
+        commandLine[name] = createCommandHandler(command);
+    });
 
     // Register user commands.
     for (var name in userCommands)
@@ -380,22 +143,12 @@ function createFirebugCommandLine(context, win)
             commandLine[name] = createCommandHandler(command);
     }
 
-    // xxxFlorent: experiment to solve the issue 6141 (not working yet)
-    var commandLineCopy = dglobal.makeDebuggeeValue({});
-    for (name in commands)
-    {
-        if (commandLine.hasOwnProperty(name))
-            commandLineCopy[name] = commandLine[name];
-    }
-    commandLineCopy.__exposedProps__ = dglobal.makeDebuggeeValue({"$": "r"});
-    commandLine.firebug = commandLineCopy;
     // xxxFlorent: TODO remove that once the work is finished
     FBTrace.sysout("firebug => ", commandLine.firebug);
 
-    Dom.setMappedData(contentView.document, "commandLine", commandLine);
+    commandLineCache.set(win.document, commandLine);
 
     return commandLine;
-    } catch(ex){ alert(ex); FBTrace.sysout(ex.stack); }
 }
 
 function findLineNumberInExceptionStack(strStack)
@@ -467,27 +220,12 @@ function removeConflictingNames(commandLine, context, contentView)
     for (var name in commandLine)
     {
         if (contentView.hasOwnProperty(name))
-        {
-            // xxxFlorent: experiment to solve issue 6141
-            if (name === "firebug")
-            {
-                // xxxFlorent: localize it
-                var message = ["%cfirebug %cis defined as a local or global variable. Firebug "+
-                    "overrides it but you can still access it by typing %cwindow.firebug",
-                    "font-style: italic", "font-style: normal", "font-style: italic"];
-                Firebug.Console.logFormatted(message, context, "warn");
-                continue;
-            }
-
             delete commandLine[name];
-        }
     }
 }
 
 function evaluate(context, expr, origExpr, onSuccess, onError)
 {
-    // xxxFlorent: TODO remove that try-catch as soon as the work is finished
-    try{
     var result;
     var win = context.window;
     var contentView = Wrapper.getContentView(win);
@@ -570,7 +308,7 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
             // Lie and show the pre-transformed expression instead.
             // xxxFlorent: needs to discuss about keeping that + localize?
             // xxxFlorent: FIXME the link to the source should open a new window
-            result.fileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE: * /"+
+            result.fileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE: */"+
                 encodeURIComponent("\n"+origExpr);
 
             // The error message can also contain post-transform details about the
@@ -587,15 +325,12 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
                 result[prop] = exc[prop];
         }
 
-        //notifyFirebug([result], "evaluateError", "firebugAppendConsole");
         onError(result);
         return result;
     }
 
     onSuccess(result);
     return result;
-    // notifyFirebug([result], "evaluated", "firebugAppendConsole");
-    } catch(ex){alert(ex.message); FBTrace.sysout(ex.stack); onError(ex, "evaluateError", "firebugAppendConsole");}
 }
 
 // ********************************************************************************************* //

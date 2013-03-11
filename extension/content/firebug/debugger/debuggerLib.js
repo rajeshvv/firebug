@@ -53,9 +53,8 @@ DebuggerLib.unwrapDebuggeeValue = function(obj, global, dglobal)
  */
 DebuggerLib.getDebuggeeGlobal = function(global, context)
 {
-    var dglobal_key = "dglobal";
     var dbg;
-    var dglobal = dglobalWeakMap.get(global);
+    var dglobal = dglobalWeakMap.get(global.document);
     if (!dglobal)
     {
         dbg = getInactiveDebuggerForContext(context);
@@ -64,7 +63,7 @@ DebuggerLib.getDebuggeeGlobal = function(global, context)
 
         dglobal = dbg.addDebuggee(global);
         dbg.removeDebuggee(global);
-        dglobalWeakMap.set(global, dglobal);
+        dglobalWeakMap.set(global.document, dglobal);
     }
     return dglobal;
 };
