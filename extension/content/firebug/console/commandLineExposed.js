@@ -74,7 +74,10 @@ function createFirebugCommandLine(context, win)
     // but that also exposes the methods of debuggee objects (pauseGrip, etc.)
     commandLine = dglobal.makeDebuggeeValue(Object.create(null));
 
-    var console = Firebug.ConsoleExposed.createFirebugConsole(context, win);
+    // Get the console Object
+    var defaultReturnValue = Firebug.Console.getDefaultReturnValue(win);
+    var console = Firebug.ConsoleExposed.createFirebugConsole(context, win, defaultReturnValue);
+
     // The command line API instance:
     var commands = CommandLineAPI.getCommandLineAPI(context, console);
 
@@ -143,8 +146,8 @@ function createFirebugCommandLine(context, win)
             commandLine[name] = createCommandHandler(command);
     }
 
-    // xxxFlorent: TODO remove that once the work is finished
-    FBTrace.sysout("firebug => ", commandLine.firebug);
+    // Register Console API (Firebug-side)
+    commandLine.console = dglobal.makeDebuggeeValue(console);
 
     commandLineCache.set(win.document, commandLine);
 
@@ -219,7 +222,7 @@ function removeConflictingNames(commandLine, context, contentView)
 {
     for (var name in commandLine)
     {
-        if (contentView.hasOwnProperty(name))
+        if (contentView.hasOwnProperty(name) && name !== "console")
             delete commandLine[name];
     }
 }
