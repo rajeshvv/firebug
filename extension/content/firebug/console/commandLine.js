@@ -193,62 +193,6 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         return result;
     },
 
-    evaluateByPostMessage: function(expr, context, thisValue, targetWindow,
-        successConsoleFunction, exceptionFunction)
-    {
-        var win = targetWindow || context.getCurrentGlobal();
-
-        if (!win)
-        {
-            if (FBTrace.DBG_ERRORS && FBTrace.DBG_COMMANDLINE)
-                FBTrace.sysout("commandLine.evaluateByPostMessage: no targetWindow!");
-            return;
-        }
-
-        // We're going to use some command-line facilities, but it may not have initialized yet.
-        this.initializeCommandLineIfNeeded(context, win);
-
-        expr = expr.toString();
-
-        var consoleHandler = Firebug.Console.injector.getConsoleHandler(context, win);
-
-        if (!consoleHandler)
-        {
-            FBTrace.sysout("commandLine evaluateByPostMessage no consoleHandler "+
-                Win.safeGetWindowLocation(win));
-            return;
-        }
-
-        if (successConsoleFunction)
-        {
-            consoleHandler.setEvaluatedCallback( function useConsoleFunction(result)
-            {
-                var ignoreReturnValue = Console.getDefaultReturnValue(win);
-                if (result === ignoreReturnValue)
-                    return;
-
-                successConsoleFunction(result, context);
-            });
-        }
-
-        if (exceptionFunction)
-        {
-            consoleHandler.evaluateError = function useExceptionFunction(result)
-            {
-                exceptionFunction(result, context, "errorMessage");
-            };
-        }
-        else
-        {
-            consoleHandler.evaluateError = function useErrorFunction(result)
-            {
-                Firebug.Console.logFormatted([result], context, "error", true);
-            };
-        }
-
-        return win.postMessage(expr, "*");
-    },
-
     evaluateInWebPage: function(expr, context, targetWindow)
     {
         var win = targetWindow || context.getCurrentGlobal();
