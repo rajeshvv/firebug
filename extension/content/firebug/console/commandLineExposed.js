@@ -289,17 +289,25 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
             shouldModify = true;
             isXPCException = (exc.filename !== undefined);
 
+            // Lie and show the pre-transformed expression instead.
+            // xxxFlorent: needs to discuss about keeping that + localize?
+            // xxxFlorent: FIXME the link to the source should open a new window
+            fileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE: */"+
+                encodeURIComponent("\n"+origExpr);
+
             if (isCommandError)
             {
                 splitStack = exc.stack.split("\n");
                 correctStackTrace(splitStack);
-                lineNumber = findLineNumberInExceptionStack(splitStack);
+                // correct the line number so we take into account the comment prepended above
+                lineNumber = findLineNumberInExceptionStack(splitStack) + 1;
+
                 // correct the first trace
-                splitStack.splice(0, 1, "@" + origExpr + ":" + lineNumber);
+                splitStack.splice(0, 1, "@" + fileName + ":" + lineNumber);
                 stack = splitStack.join("\n");
             }
             else
-                lineNumber = exc.lineNumber;
+                lineNumber = exc.lineNumber + 1;
         }
 
         result = new Error();
@@ -310,16 +318,7 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
             result.source = origExpr;
             result.message = exc.message;
             result.lineNumber = lineNumber;
-
-            // Lie and show the pre-transformed expression instead.
-            // xxxFlorent: needs to discuss about keeping that + localize?
-            // xxxFlorent: FIXME the link to the source should open a new window
-            result.fileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE: */"+
-                encodeURIComponent("\n"+origExpr);
-
-            // correct the line number so we take into account the comment prepended above
-            if (lineNumber)
-                lineNumber++;
+            result.fileName = fileName;
 
             // The error message can also contain post-transform details about the
             // source, but it's harder to lie about. Make it prettier, at least.
