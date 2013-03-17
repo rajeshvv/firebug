@@ -44,8 +44,6 @@ CommandLineAPI.getCommandLineAPI = function(context)
             if (context.baseWindow.document.getElementById(selector))
             {
                 // This should be removed in the next minor (non-bugfix) version
-
-                // xxxFlorent: should we still keep that now?
                 var msg = Locale.$STRF("warning.dollar_change", [selector]);
                 Firebug.Console.log(msg, context, "warn");
                 result = null;

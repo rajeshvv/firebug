@@ -69,9 +69,6 @@ function createFirebugCommandLine(context, win)
     var dglobal = DebuggerLib.getDebuggeeGlobal(win, context);
 
     // The commandLine object
-
-    // xxxFlorent: FIXME we need to create a debuggee object to send to evalInGlobalWithBindings,
-    // but that also exposes the methods of debuggee objects (pauseGrip, etc.)
     commandLine = dglobal.makeDebuggeeValue(Object.create(null));
 
     var console = Firebug.ConsoleExposed.createFirebugConsole(context, win);
@@ -143,27 +140,21 @@ function createFirebugCommandLine(context, win)
             commandLine[name] = createCommandHandler(command);
     }
 
-    // xxxFlorent: TODO remove that once the work is finished
-    FBTrace.sysout("firebug => ", commandLine.firebug);
-
     commandLineCache.set(win.document, commandLine);
 
     return commandLine;
 }
 
-function findLineNumberInExceptionStack(strStack)
+function findLineNumberInExceptionStack(splitStack)
 {
-    if (typeof strStack !== "string")
-        return null;
-    var stack = strStack.split("\n");
-    var fileName = Components.stack.filename, re = /^.*@(.*):(.*)$/;
-    for (var i = 0; i < stack.length; ++i)
-    {
-        var m = re.exec(stack[i]);
-        if (m && m[1] === fileName)
-            return +m[2];
-    }
-    return null;
+    var m = splitStack[0].match(/:(\d+)$/);
+    return m !== null ? +m[1] : null;
+}
+
+function correctStackTrace(splitStack)
+{
+    while (splitStack.length > 0 && splitStack[0].indexOf("chrome://firebug/") !== -1)
+        splitStack.shift();
 }
 
 // ********************************************************************************************* //
@@ -270,46 +261,64 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
         // create new error since properties of nsIXPCException are not modifiable.
         // Example of code raising nsIXPCException: `alert()` (without arguments)
 
-        // xxxFlorent: FIXME: the lineNumber is wrong with that example: cd("foo")
+        // xxxFlorent: 
+        // - FIXME: the lineNumber is wrong with that example: cd("foo")
         var exc = unwrap(resObj.throw);
 
-        if (!exc || typeof exc === "string")
+        if (!exc)
             return;
+
+        // xxxFlorent: FIXME: the line number and the stacktrace are wrong in that case
+        if (typeof exc === "string")
+        {
+            exc = new Error(exc, null, null);
+            exc.stack = null;
+            exc.source = null;
+        }
 
         var shouldModify = false, isXPCException = false;
         var fileName = exc.filename || exc.fileName;
+        var isCommandError = fileName.lastIndexOf("chrome://firebug", 0) === 0;
         var lineNumber = null;
+        var stack = null;
+        var splitStack;
         var isFileNameMasked = (fileName === "debugger eval code");
-        if (fileName.lastIndexOf("chrome:", 0) === 0 || isFileNameMasked)
+        if (isCommandError || isFileNameMasked)
         {
-            if (fileName === Components.stack.filename || isFileNameMasked)
+            shouldModify = true;
+            isXPCException = (exc.filename !== undefined);
+
+            if (isCommandError)
             {
-                shouldModify = true;
-                if (exc.filename)
-                    isXPCException = true;
+                splitStack = exc.stack.split("\n");
+                correctStackTrace(splitStack);
+                lineNumber = findLineNumberInExceptionStack(splitStack);
+                // correct the first trace
+                splitStack.splice(0, 1, "@" + origExpr + ":" + lineNumber);
+                stack = splitStack.join("\n");
+            }
+            else
                 lineNumber = exc.lineNumber;
-            }
-            else if (exc._dropFrames)
-            {
-                lineNumber = findLineNumberInExceptionStack(exc.stack);
-                shouldModify = (lineNumber !== null);
-            }
         }
 
         result = new Error();
 
         if (shouldModify)
         {
-            result.stack = null;
-            result.source = expr;
+            result.stack = stack;
+            result.source = origExpr;
             result.message = exc.message;
-            result.lineNumber = lineNumber + 1;
+            result.lineNumber = lineNumber;
 
             // Lie and show the pre-transformed expression instead.
             // xxxFlorent: needs to discuss about keeping that + localize?
             // xxxFlorent: FIXME the link to the source should open a new window
             result.fileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE: */"+
                 encodeURIComponent("\n"+origExpr);
+
+            // correct the line number so we take into account the comment prepended above
+            if (lineNumber)
+                lineNumber++;
 
             // The error message can also contain post-transform details about the
             // source, but it's harder to lie about. Make it prettier, at least.
@@ -321,8 +330,12 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
         }
         else
         {
-            for (var prop in result)
+            Obj.getPropertyNames(exc).forEach(function(prop)
+            {
                 result[prop] = exc[prop];
+            });
+            result.stack = exc.stack;
+            result.source = exc.source;
         }
 
         onError(result);
