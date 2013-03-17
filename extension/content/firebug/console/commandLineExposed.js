@@ -261,20 +261,21 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
         // create new error since properties of nsIXPCException are not modifiable.
         // Example of code raising nsIXPCException: `alert()` (without arguments)
 
-        // xxxFlorent: 
-        // - FIXME: the lineNumber is wrong with that example: cd("foo")
+        // xxxFlorent: FIXME: we can't get the right stack trace with this example:
+        //     function a(){
+        //          throw new Error("error");
+        //     }
+        //     <ENTER>
+        //     a();
+        //     <ENTER>
         var exc = unwrap(resObj.throw);
 
         if (!exc)
             return;
 
-        // xxxFlorent: FIXME: the line number and the stacktrace are wrong in that case
+        // xxxFlorent: FIXME (?): the line number and the stacktrace are wrong in that case
         if (typeof exc === "string")
-        {
-            exc = new Error(exc, null, null);
-            exc.stack = null;
-            exc.source = null;
-        }
+            exc = {message: exc};
 
         var shouldModify = false, isXPCException = false;
         var fileName = exc.filename || exc.fileName;
