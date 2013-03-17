@@ -150,7 +150,7 @@ var ClosureInspector =
 
         // Create a view of the object as seen from its own global - 'environment'
         // will not be accessible otherwise.
-        var dglobal = DebuggerLib.getDebuggerGlobal(context, objGlobal);
+        var dglobal = DebuggerLib.getDebuggeeGlobal(win, context);
 
         var dobj = dglobal.makeDebuggeeValue(obj);
 
@@ -213,7 +213,7 @@ var ClosureInspector =
         {
             env = this.getEnvironmentForObject(win, obj, context);
 
-            dglobal = DebuggerLib.getDebuggerGlobal(context, win);
+            dglobal = DebuggerLib.getDebuggeeGlobal(win, context);
         }
         catch (exc)
         {
