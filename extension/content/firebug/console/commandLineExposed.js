@@ -73,14 +73,25 @@ function createFirebugCommandLine(context, win)
 
     var console = Firebug.ConsoleExposed.createFirebugConsole(context, win);
     // The command line API instance:
-    var commands = CommandLineAPI.getCommandLineAPI(context, console);
+    var commands = CommandLineAPI.getCommandLineAPI(context);
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Exposed Properties
 
     function createCommandHandler(command)
     {
-        return dglobal.makeDebuggeeValue(command);
+        var wrappedCommand = function()
+        {
+            try
+            {
+                return command.apply(null, arguments);
+            }
+            catch(ex)
+            {
+                throw new Error(ex.message);
+            }
+        };
+        return dglobal.makeDebuggeeValue(wrappedCommand);
     }
 
     function createVariableHandler(handler)
@@ -88,7 +99,14 @@ function createFirebugCommandLine(context, win)
         var object = dglobal.makeDebuggeeValue({});
         object.handle = function()
         {
-            return handler(context);
+            try
+            {
+                return handler(context);
+            }
+            catch(ex)
+            {
+                throw new Error(ex.message);
+            }
         };
         return object;
     }
@@ -112,7 +130,7 @@ function createFirebugCommandLine(context, win)
                 }
             }
         };
-    }
+    };
 
     var command;
     // Define command line methods
