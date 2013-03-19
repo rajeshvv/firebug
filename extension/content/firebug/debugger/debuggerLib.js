@@ -1,18 +1,26 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib/dom"
 ],
-function(Dom) {
+function() {
+
 "use strict";
+
 // ********************************************************************************************* //
 // Constants
 
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 var Cu = Components.utils;
-var dglobalWeakMap = new WeakMap();
-var debuggerSingleton = null;
 
+// Debugees
+var dglobalWeakMap = new WeakMap();
+
+// Module object
 var DebuggerLib = {};
+
+// ********************************************************************************************* //
+// Implementation
 
 /**
  * Unwraps the value of a debuggee object.
@@ -51,13 +59,14 @@ DebuggerLib.unwrapDebuggeeValue = function(obj, global, dglobal)
  *
  * @return {Debuggee Window} The debuggee global
  */
-DebuggerLib.getDebuggeeGlobal = function(global, context)
+DebuggerLib.getDebuggeeGlobal = function(context, global)
 {
-    var dbg;
+    global = global || context.getCurrentGlobal();
+
     var dglobal = dglobalWeakMap.get(global.document);
     if (!dglobal)
     {
-        dbg = getInactiveDebuggerForContext(context);
+        var dbg = getInactiveDebuggerForContext(context);
         if (!dbg)
             return;
 
@@ -108,12 +117,10 @@ var getInactiveDebuggerForContext = function(context)
     return dbg;
 };
 
-
 // ********************************************************************************************* //
+// Registration
 
 return DebuggerLib;
 
 // ********************************************************************************************* //
-
-
 });
