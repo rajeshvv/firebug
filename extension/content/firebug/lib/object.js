@@ -249,10 +249,8 @@ Obj.getPropertyNames = Object.getPropertyNames || function(subject)
         proto = Object.getPrototypeOf(proto);
     }
     // only keep unique elements from props (not optimised):
-    // xxxFlorent: [ES6-SET] [ES6-SPREAD]
     //    props = [...new Set(props)];
-    Arr.unique(props);
-    return props;
+    return Arr.unique(props);
 };
 
 

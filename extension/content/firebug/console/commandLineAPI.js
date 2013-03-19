@@ -27,6 +27,7 @@ var CommandLineAPI = {};
 CommandLineAPI.getCommandLineAPI = function(context)
 {
     var commands = Object.create(null);
+
     // returns unwrapped elements from the page
     commands.$ = function(selector, start)
     {

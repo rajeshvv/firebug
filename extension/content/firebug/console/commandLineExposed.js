@@ -73,14 +73,25 @@ function createFirebugCommandLine(context, win)
 
     var console = Firebug.ConsoleExposed.createFirebugConsole(context, win);
     // The command line API instance:
-    var commands = CommandLineAPI.getCommandLineAPI(context, console);
+    var commands = CommandLineAPI.getCommandLineAPI(context);
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Exposed Properties
 
     function createCommandHandler(command)
     {
-        return dglobal.makeDebuggeeValue(command);
+        var wrappedCommand = function()
+        {
+            try
+            {
+                return command.apply(null, arguments);
+            }
+            catch(ex)
+            {
+                throw new Error(ex.message, ex.fileName, ex.lineNumber);
+            }
+        };
+        return dglobal.makeDebuggeeValue(wrappedCommand);
     }
 
     function createVariableHandler(handler)
@@ -88,7 +99,14 @@ function createFirebugCommandLine(context, win)
         var object = dglobal.makeDebuggeeValue({});
         object.handle = function()
         {
-            return handler(context);
+            try
+            {
+                return handler(context);
+            }
+            catch(ex)
+            {
+                throw new Error(ex.message, ex.fileName, ex.lineNumber);
+            }
         };
         return object;
     }
@@ -112,7 +130,7 @@ function createFirebugCommandLine(context, win)
                 }
             }
         };
-    }
+    };
 
     var command;
     // Define command line methods
@@ -153,8 +171,15 @@ function findLineNumberInExceptionStack(splitStack)
 
 function correctStackTrace(splitStack)
 {
-    while (splitStack.length > 0 && splitStack[0].indexOf("chrome://firebug/") !== -1)
-        splitStack.shift();
+    var filename = Components.stack.filename;
+    // remove the frames over the evaluated expression
+    for (var i = 0; i < splitStack.length-1 &&
+        splitStack[i+1].indexOf(evaluate.name + "@" + filename, 0) === -1 ; i++);
+
+    if (i >= splitStack.length)
+        return false;
+    splitStack.splice(0, i);
+    return true;
 }
 
 // ********************************************************************************************* //
@@ -270,21 +295,21 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
         //     <ENTER>
         var exc = unwrap(resObj.throw);
 
-        if (!exc)
+        if (exc === null || exc === undefined)
             return;
 
         // xxxFlorent: FIXME (?): the line number and the stacktrace are wrong in that case
-        if (typeof exc === "string")
+        if (typeof exc !== "object")
             exc = {message: exc};
 
         var shouldModify = false, isXPCException = false;
-        var fileName = exc.filename || exc.fileName;
-        var isCommandError = fileName.lastIndexOf("chrome://firebug", 0) === 0;
+        var fileName = exc.filename || exc.fileName || "";
+        var isInternalError = fileName.lastIndexOf("chrome://", 0) === 0;
         var lineNumber = null;
         var stack = null;
         var splitStack;
         var isFileNameMasked = (fileName === "debugger eval code");
-        if (isCommandError || isFileNameMasked)
+        if (isInternalError || isFileNameMasked)
         {
             shouldModify = true;
             isXPCException = (exc.filename !== undefined);
@@ -295,19 +320,27 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
             fileName = "data:,/* EXPRESSION EVALUATED USING THE FIREBUG COMMAND LINE: */"+
                 encodeURIComponent("\n"+origExpr);
 
-            if (isCommandError)
+            if (isInternalError && typeof exc.stack === "string")
             {
                 splitStack = exc.stack.split("\n");
-                correctStackTrace(splitStack);
-                // correct the line number so we take into account the comment prepended above
-                lineNumber = findLineNumberInExceptionStack(splitStack) + 1;
+                var correctionSucceeded = correctStackTrace(splitStack);
+                if (correctionSucceeded)
+                {
+                    // correct the line number so we take into account the comment prepended above
+                    lineNumber = findLineNumberInExceptionStack(splitStack) + 1;
 
-                // correct the first trace
-                splitStack.splice(0, 1, "@" + fileName + ":" + lineNumber);
-                stack = splitStack.join("\n");
+                    // correct the first trace
+                    splitStack.splice(0, 1, "@" + fileName + ":" + lineNumber);
+                    stack = splitStack.join("\n");
+                }
+                else
+                    shouldModify = false;
             }
             else
+            {
+                // correct the line number so we take into account the comment prepended above
                 lineNumber = exc.lineNumber + 1;
+            }
         }
 
         result = new Error();

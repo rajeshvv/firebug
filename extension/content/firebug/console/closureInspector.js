@@ -200,25 +200,10 @@ var ClosureInspector =
 
     getClosureWrapper: function(obj, win, context)
     {
-        function throwUserError(exc)
-        {
-            // Throw an exception into user-land, where we hope it lands
-            // safely in commandLineExposed.js for internals to be hidden.
-            exc._dropFrames = true;
-            throw exc;
-        }
-
         var env, dglobal;
-        try
-        {
-            env = this.getEnvironmentForObject(win, obj, context);
+        env = this.getEnvironmentForObject(win, obj, context);
 
-            dglobal = DebuggerLib.getDebuggeeGlobal(win, context);
-        }
-        catch (exc)
-        {
-            throwUserError(exc);
-        }
+        dglobal = DebuggerLib.getDebuggeeGlobal(win, context);
 
         // Return a wrapper for its scoped variables.
         var self = this;
@@ -267,9 +252,9 @@ var ClosureInspector =
                     var dvalue = dglobal.makeDebuggeeValue(value);
                     var scope = env.find(name);
                     if (!scope)
-                        throwUserError(new Error("can't create new closure variable"));
+                        throw new Error("can't create new closure variable");
                     if (self.getVariableOrOptimizedAway(scope, name) === OptimizedAway)
-                        throwUserError(new Error("can't set optimized-away closure variable"));
+                        throw new Error("can't set optimized-away closure variable");
                     scope.setVariable(name, dvalue);
                 }
             };
@@ -277,7 +262,7 @@ var ClosureInspector =
         handler.getPropertyDescriptor = handler.getOwnPropertyDescriptor;
         handler.delete = function(name)
         {
-            throwUserError(new Error("can't delete closure variable"));
+            throw new Error("can't delete closure variable");
         };
         // Other traps are syntactically inaccessible, so we don't need to implement them.
         return Proxy.create(handler);
