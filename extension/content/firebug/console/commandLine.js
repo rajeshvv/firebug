@@ -156,7 +156,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         Firebug.Console.injector.attachIfNeeded(context, win);
 
         origExpr = origExpr || expr;
-        var ret = CommandLineExposed.evaluate(context, expr, origExpr, onSuccess, onError);
+        var ret = CommandLineExposed.evaluate(context, win, expr, origExpr, onSuccess, onError);
 
         if (FBTrace.DBG_COMMANDLINE)
         {

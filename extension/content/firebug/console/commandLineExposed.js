@@ -26,7 +26,7 @@ var commandLineCache = new WeakMap();
 // Command Line APIs
 
 // List of command line APIs
-var commands = ["$", "$$", "$x", "$n", "cd", "clear", "inspect", "keys",
+var commandNames = ["$", "$$", "$x", "$n", "cd", "clear", "inspect", "keys",
     "values", "debug", "undebug", "monitor", "unmonitor", "traceCalls", "untraceCalls",
     "traceAll", "untraceAll", "copy" /*, "memoryProfile", "memoryProfileEnd"*/];
 
@@ -66,7 +66,7 @@ function createFirebugCommandLine(context, win)
         return commandLine;
 
     // the debuggee global:
-    var dglobal = DebuggerLib.getDebuggeeGlobal(win, context);
+    var dglobal = DebuggerLib.getDebuggeeGlobal(context, win);
 
     // The commandLine object
     commandLine = dglobal.makeDebuggeeValue(Object.create(null));
@@ -143,7 +143,7 @@ function createFirebugCommandLine(context, win)
     // Register shortcut.
     consoleShortcuts.forEach(function(name)
     {
-        var command = console[name].bind(console);
+        command = console[name].bind(console);
         commandLine[name] = createCommandHandler(command);
     });
 
@@ -187,7 +187,7 @@ function correctStackTrace(splitStack)
 
 function registerCommand(name, config)
 {
-    if (commands[name] || consoleShortcuts[name] || props[name] || userCommands[name])
+    if (commandNames[name] || consoleShortcuts[name] || props[name] || userCommands[name])
     {
         if (FBTrace.DBG_ERRORS)
         {
@@ -240,13 +240,12 @@ function removeConflictingNames(commandLine, context, contentView)
     }
 }
 
-function evaluate(context, expr, origExpr, onSuccess, onError)
+function evaluate(context, win, expr, origExpr, onSuccess, onError)
 {
     var result;
-    var win = context.window;
     var contentView = Wrapper.getContentView(win);
     var commandLine = createFirebugCommandLine(context, win);
-    var dglobal = DebuggerLib.getDebuggeeGlobal(context.window, context);
+    var dglobal = DebuggerLib.getDebuggeeGlobal(context, win);
     var resObj;
 
     updateVars(commandLine, dglobal, context);
@@ -385,7 +384,7 @@ function evaluate(context, expr, origExpr, onSuccess, onError)
 Firebug.CommandLineExposed =
 {
     createFirebugCommandLine: createFirebugCommandLine,
-    commands: commands,
+    commands: commandNames,
     consoleShortcuts: consoleShortcuts,
     properties: props,
     userCommands: userCommands,
