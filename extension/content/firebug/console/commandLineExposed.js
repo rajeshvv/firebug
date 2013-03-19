@@ -132,18 +132,17 @@ function createFirebugCommandLine(context, win)
         };
     };
 
-    var command;
     // Define command line methods
     for (var commandName in commands)
     {
-        command = commands[commandName];
+        var command = commands[commandName];
         commandLine[commandName] = createCommandHandler(command);
     }
 
     // Register shortcut.
     consoleShortcuts.forEach(function(name)
     {
-        command = console[name].bind(console);
+        var command = console[name].bind(console);
         commandLine[name] = createCommandHandler(command);
     });
 
@@ -151,7 +150,7 @@ function createFirebugCommandLine(context, win)
     for (var name in userCommands)
     {
         var config = userCommands[name];
-        command = createUserCommandHandler(config, name);
+        var command = createUserCommandHandler(config, name);
         if (userCommands[name].getter)
             commandLine[name] = createVariableHandler(command);
         else
