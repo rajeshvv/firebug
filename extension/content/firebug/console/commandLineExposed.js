@@ -61,12 +61,12 @@ function createFirebugCommandLine(context, win)
         return null;
     }
 
-    var commandLine = commandLineCache.get(win.document);
-    if (commandLine)
-        return commandLine;
-
     // the debuggee global:
     var dglobal = DebuggerLib.getDebuggeeGlobal(context, win);
+
+    var commandLine = commandLineCache.get(win.document);
+    if (commandLine)
+        return copyCommandLine(commandLine, dglobal);
 
     // The commandLine object
     commandLine = dglobal.makeDebuggeeValue(Object.create(null));
@@ -159,7 +159,16 @@ function createFirebugCommandLine(context, win)
 
     commandLineCache.set(win.document, commandLine);
 
-    return commandLine;
+    // return a copy so the original one is preserved from changes
+    return copyCommandLine(commandLine, dglobal);
+}
+
+function copyCommandLine(commandLine, dglobal)
+{
+    var copy = dglobal.makeDebuggeeValue(Object.create(null));
+    for (var name in commandLine)
+        copy[name] = commandLine[name];
+    return copy;
 }
 
 function findLineNumberInExceptionStack(splitStack)
