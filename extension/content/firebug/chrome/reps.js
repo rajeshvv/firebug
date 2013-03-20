@@ -882,8 +882,6 @@ function instanceOf(object, Klass)
     return false;
 }
 
-
-
 // ********************************************************************************************* //
 
 FirebugReps.Element = domplate(Firebug.Rep,
@@ -916,11 +914,15 @@ FirebugReps.Element = domplate(Firebug.Rep,
     multipleValueTag:
         SPAN(
             SPAN("&nbsp;"),
-            SPAN({"class": "selectorValue"}, "attribute value="),
-            TAG("$object|getValue1Tag", {object: "$object|getValue1"}),
+            SPAN({"class": "selectorValue"},
+                Locale.$STR("firebug.reps.element.attribute_value") + " = "
+            ),
+            TAG(FirebugReps.String.tag, {object: "$object|getValueFromAttribute"}),
             SPAN("&nbsp;"),
-            SPAN({"class": "selectorValue"}, "property value="),
-            TAG("$object|getValue2Tag", {object: "$object|getValue2"})
+            SPAN({"class": "selectorValue"},
+                Locale.$STR("firebug.reps.element.property_value") + " = " +
+                "$object|getValueFromProperty"
+            )
         ),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -939,25 +941,12 @@ FirebugReps.Element = domplate(Firebug.Rep,
         return this.valueTag;
     },
 
-    getValue1Tag: function(elt)
-    {
-        var value = elt.getAttribute("value");
-        var rep = Firebug.getRep(value);
-        return rep.shortTag ? rep.shortTag : rep.tag;
-    },
-
-    getValue1: function(elt)
+    getValueFromAttribute: function(elt)
     {
         return elt.getAttribute("value");
     },
 
-    getValue2Tag: function(elt)
-    {
-        var rep = Firebug.getRep(elt.value);
-        return rep.shortTag ? rep.shortTag : rep.tag;
-    },
-
-    getValue2: function(elt)
+    getValueFromProperty: function(elt)
     {
         return elt.value;
     },
@@ -971,17 +960,7 @@ FirebugReps.Element = domplate(Firebug.Rep,
         else if (elt instanceof window.HTMLAnchorElement)
             value = Url.getFileName(elt.getAttribute("href"));
         else if (elt instanceof window.HTMLInputElement)
-        {
-            var attrValue = elt.getAttribute("value");
-            var propValue = elt.value;
-
-            // Value of the "value" attribute can be different from value of the
-            // "value" property
-            if (attrValue != propValue)
-                value = attrValue + " " + propValue;
-            else
-                value = attrValue;
-        }
+            value = elt.getAttribute("value");
         else if (elt instanceof window.HTMLFormElement)
             value = Url.getFileName(elt.getAttribute("action"));
         else if (elt instanceof window.HTMLScriptElement)
