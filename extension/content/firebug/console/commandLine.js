@@ -43,25 +43,6 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    // targetWindow was needed by evaluateInSandbox, let's leave it for a while in case
-    // we rethink this yet again
-    initializeCommandLineIfNeeded: function (context, win)
-    {
-        if (!context || !win)
-            return;
-
-        // The command-line requires that the console has been initialized first,
-        // so make sure that's so.  This call should have no effect if the console
-        // is already initialized.
-        var consoleIsReady = Firebug.Console.isReadyElsePreparing(context, win);
-
-        if (FBTrace.DBG_COMMANDLINE)
-        {
-            FBTrace.sysout("commandLine.initializeCommandLineIfNeeded console ready: " +
-                consoleIsReady);
-        }
-    },
-
     evaluate: function(expr, context, thisValue, targetWindow, successConsoleFunction,
         exceptionFunction, noStateChange)
     {
