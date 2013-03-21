@@ -742,7 +742,11 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Firebug.Panel,
         // 2) object[propName] can also throws in case of e.g. non existing "abc.abc" prop name.
         try
         {
-            if (object instanceof StackFrame)
+            // The new Watch panel displays also list of scopes (functions) and so,
+            // if the object is a function evaluate also on the current stack.
+            if (typeof(object) == "function")
+                return Firebug.Debugger.evaluate(propName, this.context);
+            else if (object instanceof StackFrame)
                 return Firebug.Debugger.evaluate(propName, this.context);
             else
                 return object[propName];
@@ -1012,6 +1016,7 @@ function getRowOwnerObject(row)
         return getRowValue(parentRow);
 }
 
+// xxxHonza: use the method from {@DomTree}
 function getParentRow(row)
 {
     var level = "" + (parseInt(row.getAttribute("level"), 10) - 1);
