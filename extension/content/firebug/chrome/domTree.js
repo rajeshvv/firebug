@@ -138,6 +138,7 @@ DomTree.prototype = domplate(
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Expand & Collapse
 
     toggleRow: function(row, forceOpen)
     {
@@ -191,10 +192,8 @@ DomTree.prototype = domplate(
         }
     },
 
-    getRowLevel: function(row)
-    {
-        return parseInt(row.getAttribute("level"), 10);
-    },
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Members
 
     memberIterator: function(object)
     {
@@ -341,6 +340,7 @@ DomTree.prototype = domplate(
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Row Helpers
 
     getRow: function(object)
     {
@@ -361,6 +361,31 @@ DomTree.prototype = domplate(
 
         return null;
     },
+
+    getRowLevel: function(row)
+    {
+        return parseInt(row.getAttribute("level"), 10);
+    },
+
+    getParentRow: function(row)
+    {
+        var level = this.getRowLevel(row);
+
+        // The first (zero) level doesn't have a parent.
+        if (level == 0)
+            return;
+
+        // Climb rows to find the first one with lower level
+        var parentLevel = level - 1;
+        for (var prevRow = row.previousSibling; prevRow; prevRow = prevRow.previousSibling)
+        {
+            if (this.getRowLevel(prevRow) == parentLevel)
+                return prevRow;
+        }
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Promises
 
     resolvePromise: function(promise, object)
     {
