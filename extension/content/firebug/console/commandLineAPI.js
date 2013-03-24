@@ -171,6 +171,30 @@ CommandLineAPI.getCommandLineAPI = function(context)
         return Arr.values(o);
     };
 
+    commands.debug = function(fn)
+    {
+        Firebug.Debugger.monitorFunction(fn, "debug");
+        return Firebug.Console.getDefaultReturnValue(context.window);
+    };
+
+    commands.undebug = function(fn)
+    {
+        Firebug.Debugger.unmonitorFunction(fn, "debug");
+        return Firebug.Console.getDefaultReturnValue(context.window);
+    };
+
+    commands.monitor = function(fn)
+    {
+        Firebug.Debugger.monitorFunction(fn, "monitor");
+        return Firebug.Console.getDefaultReturnValue(context.window);
+    };
+
+    commands.unmonitor = function(fn)
+    {
+        Firebug.Debugger.unmonitorFunction(fn, "monitor");
+        return Firebug.Console.getDefaultReturnValue(context.window);
+    };
+
     commands.traceAll = function()
     {
         // See issue 6220
