@@ -378,11 +378,11 @@ function evaluate(context, win, expr, origExpr, onSuccess, onError)
             result.source = exc.source;
         }
 
-        onError(result);
+        onError(result, context);
         return result;
     }
 
-    onSuccess(result);
+    onSuccess(result, context);
     return result;
 }
 
